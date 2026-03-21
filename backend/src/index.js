@@ -15,7 +15,7 @@ app.use(cors({
 ));
 app.use(express.json());
 
-// Veritabanı bağlantı ayarları (Docker Compose'daki isimleri kullanıyoruz)
+
 const pool = new Pool({
   user: process.env.DB_USER || 'postgres',
   host: process.env.DB_HOST || 'db',
@@ -24,9 +24,7 @@ const pool = new Pool({
   port: 5432,
 });
 
-// --- ENDPOINTS ---
 
-// 1. GET: Tüm kişileri listele
 app.get('/api/people', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM people ORDER BY id ASC');
@@ -36,16 +34,16 @@ app.get('/api/people', async (req, res) => {
   }
 });
 
-// 2. POST: Yeni kişi ekle (Validation dahil)
+
 app.post('/api/people', async (req, res) => {
   const { full_name, email } = req.body;
 
-  // Temel Boşluk Kontrolü
+ 
   if (!full_name || !email) {
     return res.status(400).json({ error: "İsim ve email zorunludur." });
   }
 
-  // Email Format Kontrolü (Regex)
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return res.status(400).json({ error: "Geçersiz email formatı." });
@@ -58,14 +56,14 @@ app.post('/api/people', async (req, res) => {
     );
     res.status(201).json(newUser.rows[0]);
   } catch (err) {
-    if (err.code === '23505') { // Mükerrer kayıt hatası (Unique constraint)
+    if (err.code === '23505') { 
       return res.status(409).json({ error: "Bu email adresi zaten kayıtlı." });
     }
     res.status(500).json({ error: "Veritabanı hatası" });
   }
 });
 
-// 3. PUT: Kişi güncelle
+
 app.put('/api/people/:id', async (req, res) => {
   const { id } = req.params;
   const { full_name, email } = req.body;
@@ -81,7 +79,7 @@ app.put('/api/people/:id', async (req, res) => {
   }
 });
 
-// 4. DELETE: Kişi sil
+
 app.delete('/api/people/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -92,7 +90,7 @@ app.delete('/api/people/:id', async (req, res) => {
   }
 });
 
-// Eski halini sil, bunu yapıştır:
+
 const PORT = 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`);
