@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Veritabanı Servisi
+  
   db:
     image: postgres:15-alpine
     container_name: postgres_db
@@ -14,11 +14,11 @@ services:
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  # Backend Servisi
+  
   backend:
     build: ./backend
     ports:
-      - "3000:3000"  # Bilgisayarındaki 3000 -> Docker içindeki 3000
+      - "3000:3000"  
     environment:
       - DATABASE_URL=postgres://user:password@db:5432/person_db
     depends_on:
@@ -27,7 +27,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "3001:3001" # Bilgisayarındaki 3001'i Docker'daki 3001'e bağlar
+      - "3001:3001" 
     environment:
       - PORT=3001
     stdin_open: true
