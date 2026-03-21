@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// 1. Fonksiyonun adı tam olarak 'App' olmalı
+
 function App() {
   const [people, setPeople] = useState([]);
   const [name, setName] = useState('');
@@ -65,5 +65,5 @@ const API_URL = 'http://localhost:3000/api/people';
   );
 }
 
-// 2. BU SATIRIN OLDUĞUNDAN EMİN OL (Hata muhtemelen burada)
+
 export default App;
