@@ -48,6 +48,32 @@ docker-compose up --build
 
 **Backend API:** You can view the stored data (JSON) at http://localhost:3000/api/people.
 
+## ScreenShots 
+
+<p align="center">
+  <img width="600" height="500" src="https://github.com/user-attachments/assets/8a650e0d-434c-4423-997b-2c980ac4cb92" />
+  <br/>
+  <em>Registration Form </em>
+</p>
+<p align="center">
+  <img width="600" height="500" src="https://github.com/user-attachments/assets/ebbf3faa-1a25-4638-ba36-928bbbe0df12" />
+  <br/>
+  <em> List of People that are registered</em>
+</p>
+<p align="center">
+  <img width="600" height="500" src="https://github.com/user-attachments/assets/713c5998-4c4e-44e7-93ba-3080eb811fe5" />
+  <br/>
+  <em>The API Endpoints screen displays the structure and description of GET and POST requests within the system.</em>
+</p>
+<p align="center">
+  <img width="600" height="500" src="https://github.com/user-attachments/assets/02ec2b6a-ad7b-41dd-a55e-c6290e8d7e16" />
+  <br/>
+  <em>Delete button </em>
+</p>
+
+
+
+
 ## 🛰️ API Endpoints
 
 | Method | Endpoint     | Description                                      |
