@@ -78,4 +78,10 @@ CREATE INDEX idx_meeting_requests_post_id ON meeting_requests(post_id);
 CREATE INDEX idx_meeting_requests_requester_id ON meeting_requests(requester_id);
 CREATE INDEX idx_meeting_requests_receiver_id ON meeting_requests(receiver_id);
 CREATE INDEX idx_activity_logs_user_id ON activity_logs(user_id);
-CREATE INDEX idx_activity_logs_timestamp ON activity_logs(timestamp); 
+CREATE INDEX idx_activity_logs_timestamp ON activity_logs(timestamp);
+
+-- Test Users (password is "password123")
+INSERT INTO users (full_name, email, password_hash, role, institution, status, email_verified)
+VALUES 
+  ('Engineer Test', 'engineer@example.edu', '$2b$10$R/Y2wy5FhhggGMby6BjNFec6ZA.yijp6NUvJmAP4AEPpF9VlsAlcK', 'ENGINEER', 'MIT', 'ACTIVE', true),
+  ('Healthcare Test', 'doctor@example.edu.tr', '$2b$10$R/Y2wy5FhhggGMby6BjNFec6ZA.yijp6NUvJmAP4AEPpF9VlsAlcK', 'HEALTHCARE', 'Istanbul Hospital', 'ACTIVE', true); 

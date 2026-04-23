@@ -1,8 +1,9 @@
 import { ArrowLeft, Settings, Stethoscope } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
 import FormInput from '../components/FormInput';
-import React from 'react';
+import React, { useState } from 'react';
+import { apiFetch } from '../api';
 
 const roleContent = {
   healthcare: {
@@ -20,8 +21,60 @@ const roleContent = {
 };
 
 export default function RegisterPage({ role = 'healthcare' }) {
+  const navigate = useNavigate();
   const currentRole = roleContent[role];
   const { Icon } = currentRole;
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [repeatPassword, setRepeatPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!firstName || !lastName || !email || !password || !repeatPassword) {
+      setError('All fields are required');
+      return;
+    }
+
+    if (password !== repeatPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const data = await apiFetch('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          fullName: `${firstName} ${lastName}`,
+          email,
+          password,
+          role: role.toUpperCase(),
+          institution: '',
+        }),
+      });
+
+      setError('');
+      alert('Registration successful! Please log in with your credentials.');
+      navigate('/login');
+    } catch (err) {
+      setError(err.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <AuthLayout
@@ -43,18 +96,51 @@ export default function RegisterPage({ role = 'healthcare' }) {
         <div className="auth-form-card auth-form-card--medium">
           <h2>Register</h2>
           <p className="subtle-copy">Create a new account to get started.</p>
-          <div className="form-stack">
+          <form className="form-stack" onSubmit={handleRegister}>
             <div className="two-column-grid">
-              <FormInput label="Name" placeholder="First name" />
-              <FormInput label="Last Name" placeholder="Last name" />
+              <FormInput
+                label="Name"
+                placeholder="First name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+              <FormInput
+                label="Last Name"
+                placeholder="Last name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
             </div>
-            <FormInput label="Email" placeholder="Enter your email" />
-            <FormInput label="Password" placeholder="Create a password" type="password" />
-            <FormInput label="Repeat Password" placeholder="Repeat your password" type="password" />
-            <Link className="primary-button primary-button--light" to="/main">
-              Sign Up
-            </Link>
-          </div>
+            <FormInput
+              label="Email"
+              placeholder="Enter your email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <FormInput
+              label="Password"
+              placeholder="Create a password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <FormInput
+              label="Repeat Password"
+              placeholder="Repeat your password"
+              type="password"
+              value={repeatPassword}
+              onChange={(e) => setRepeatPassword(e.target.value)}
+            />
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            <button
+              type="submit"
+              className="primary-button primary-button--light"
+              disabled={loading}
+            >
+              {loading ? 'Signing up...' : 'Sign Up'}
+            </button>
+          </form>
         </div>
       }
     />

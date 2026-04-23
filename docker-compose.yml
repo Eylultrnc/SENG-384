@@ -17,6 +17,12 @@ services:
       - "3000:3000"
     environment:
       - DATABASE_URL=postgres://postgres:password@db:5432/person_db
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_NAME=person_db
+      - JWT_SECRET=your_super_secret_key_change_me_in_production_12345
+      - NODE_ENV=development
     depends_on:
       - db
 

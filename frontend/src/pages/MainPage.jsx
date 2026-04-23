@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import SidebarProfile from '../components/SidebarProfile';
 import { apiFetch } from '../api';
 
 export default function MainPage() {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,6 +24,14 @@ export default function MainPage() {
 
     fetchPosts();
   }, []);
+
+  const handleCreatePost = () => {
+    alert('Create post feature coming soon!');
+  };
+
+  const handleHelp = () => {
+    alert('Need help? Contact support@healthai.com');
+  };
 
   return (
     <div className="app-shell">
@@ -59,8 +69,8 @@ export default function MainPage() {
         </section>
       </main>
 
-      <button className="floating-action">➤</button>
-      <button className="help-button">?</button>
+      <button className="floating-action" onClick={handleCreatePost} title="Create new post">➤</button>
+      <button className="help-button" onClick={handleHelp} title="Get help">?</button>
     </div>
   );
 }  
