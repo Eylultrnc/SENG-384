@@ -60,7 +60,7 @@ const createPost = async (req, res) => {
     });
   } catch (error) {
     console.error("CREATE POST ERROR:", error);
-    res.status(500).json({ message: "Server error while creating post" });
+    res.status(500).json({ message: "Server error while creating post: " + error.message });
   }
 };
 

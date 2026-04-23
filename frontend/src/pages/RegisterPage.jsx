@@ -1,8 +1,9 @@
 import { ArrowLeft, Settings, Stethoscope } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
 import FormInput from '../components/FormInput';
-import React from 'react';
+import { apiFetch } from '../api';
 
 const roleContent = {
   healthcare: {
@@ -22,6 +23,44 @@ const roleContent = {
 export default function RegisterPage({ role = 'healthcare' }) {
   const currentRole = roleContent[role];
   const { Icon } = currentRole;
+  const navigate = useNavigate();
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [repeatPassword, setRepeatPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (password !== repeatPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    setError('');
+    setLoading(true);
+
+    try {
+      await apiFetch('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          fullName: `${firstName} ${lastName}`.trim(),
+          email,
+          password,
+          role,
+        }),
+      });
+      setSuccess("Account created! You can now log in.");
+      setTimeout(() => navigate('/'), 2000);
+    } catch (err) {
+      setError(err.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <AuthLayout
@@ -43,18 +82,22 @@ export default function RegisterPage({ role = 'healthcare' }) {
         <div className="auth-form-card auth-form-card--medium">
           <h2>Register</h2>
           <p className="subtle-copy">Create a new account to get started.</p>
-          <div className="form-stack">
+          <form className="form-stack" onSubmit={handleRegister}>
             <div className="two-column-grid">
-              <FormInput label="Name" placeholder="First name" />
-              <FormInput label="Last Name" placeholder="Last name" />
+              <FormInput required value={firstName} onChange={e => setFirstName(e.target.value)} label="Name" placeholder="First name" />
+              <FormInput required value={lastName} onChange={e => setLastName(e.target.value)} label="Last Name" placeholder="Last name" />
             </div>
-            <FormInput label="Email" placeholder="Enter your email" />
-            <FormInput label="Password" placeholder="Create a password" type="password" />
-            <FormInput label="Repeat Password" placeholder="Repeat your password" type="password" />
-            <Link className="primary-button primary-button--light" to="/main">
-              Sign Up
-            </Link>
-          </div>
+            <FormInput required value={email} onChange={e => setEmail(e.target.value)} label="Email" placeholder="Enter your email" type="email" />
+            <FormInput required value={password} onChange={e => setPassword(e.target.value)} label="Password" placeholder="Create a password" type="password" />
+            <FormInput required value={repeatPassword} onChange={e => setRepeatPassword(e.target.value)} label="Repeat Password" placeholder="Repeat your password" type="password" />
+            
+            {error && <p className="error-message" style={{color: 'red'}}>{error}</p>}
+            {success && <p className="success-message" style={{color: 'green'}}>{success}</p>}
+            
+            <button disabled={loading} type="submit" className="primary-button primary-button--light">
+              {loading ? "Signing up..." : "Sign Up"}
+            </button>
+          </form>
         </div>
       }
     />

@@ -1,8 +1,18 @@
+import React, { useEffect, useState } from 'react';
 import { UserCircle2 } from 'lucide-react';
 import { proposals } from '../data/mockData';
 import { Link } from 'react-router-dom';
 
 export default function SidebarProfile() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   return (
     <aside className="sidebar">
       <div className="sidebar-card profile-card">
@@ -10,13 +20,16 @@ export default function SidebarProfile() {
           <div className="profile-avatar">
             <UserCircle2 size={58} strokeWidth={1.7} />
           </div>
-          <div>
-            <h3>John Doe</h3>
-            <p>Healthcare Professional</p>
+          <div style={{overflow: 'hidden'}}>
+            <h3 style={{whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}>{user?.fullName || 'John Doe'}</h3>
+            <p>{user?.role || 'Healthcare Professional'}</p>
           </div>
         </div>
         <Link to="/profile" className="secondary-button secondary-button--wide">
           View Profile
+        </Link>
+        <Link to="/messages" className="secondary-button secondary-button--wide" style={{marginTop: '10px', display: 'flex', gap: '8px'}}>
+          <span>DMs & Messages</span>
         </Link>
       </div>
 

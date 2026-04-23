@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import AppHeader from '../components/AppHeader';
 import SidebarProfile from '../components/SidebarProfile';
+import CreatePostModal from '../components/CreatePostModal';
 import { apiFetch } from '../api';
+import { useNavigate } from 'react-router-dom';
 
 export default function MainPage() {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -31,9 +35,9 @@ export default function MainPage() {
         <SidebarProfile />
 
         <section className="feed-section">
-          <div className="page-intro">
-            <h1>Health AI Insights (REAL DATA)</h1>
-            <p>Now connected to backend 🚀</p>
+          <div className="page-intro" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+            <h1>Health AI Insights</h1>
+            <button className="primary-button" style={{height: '42px', minHeight: '42px', padding: '0 20px'}} onClick={() => setIsModalOpen(true)}>+ Create Post</button>
           </div>
 
           {loading && <p>Loading posts...</p>}
@@ -59,8 +63,13 @@ export default function MainPage() {
         </section>
       </main>
 
-      <button className="floating-action">➤</button>
-      <button className="help-button">?</button>
+      <CreatePostModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onPostCreated={(newPost) => setPosts([newPost, ...posts])} 
+      />
+
+      <button className="floating-action" onClick={() => navigate('/messages')}>➤</button>
     </div>
   );
 }  

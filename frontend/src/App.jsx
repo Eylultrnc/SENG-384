@@ -4,6 +4,7 @@ import StandaloneLoginPage from './pages/StandaloneLoginPage';
 import RegisterPage from './pages/RegisterPage';
 import MainPage from './pages/MainPage';
 import ProfilePage from './pages/ProfilePage';
+import MessagesPage from './pages/MessagesPage';
 import React from 'react';
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
       <Route path="/register/engineer" element={<RegisterPage role="engineer" />} />
       <Route path="/main" element={<MainPage />} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/messages" element={<MessagesPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

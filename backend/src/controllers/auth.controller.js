@@ -15,11 +15,11 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    if (!isEduEmail(email)) {
-      return res.status(400).json({
-        message: "Only institutional .edu or .edu.tr emails are allowed",
-      });
-    }
+    // if (!isEduEmail(email)) {
+    //   return res.status(400).json({
+    //     message: "Only institutional .edu or .edu.tr emails are allowed",
+    //   });
+    // }
 
     if (role.toUpperCase() === "ADMIN") {
       return res.status(403).json({
@@ -50,8 +50,8 @@ const register = async (req, res) => {
         passwordHash,
         role.toUpperCase(),
         institution || null,
-        "PENDING_VERIFICATION",
-        false,
+        "ACTIVE",
+        true,
         verificationToken,
       ]
     );

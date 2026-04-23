@@ -4,6 +4,8 @@ require("dotenv").config();
 
 const authRoutes = require("./routes/auth.routes");
 const postRoutes = require("./routes/post.routes");
+const userRoutes = require("./routes/user.routes");
+const messageRoutes = require("./routes/message.routes");
 const pool = require("./db");
 
 const app = express();
@@ -27,6 +29,8 @@ app.get("/api/db-test", async (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/messages", messageRoutes);
 
 const PORT = process.env.PORT || 3000;
 
