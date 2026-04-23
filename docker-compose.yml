@@ -1,7 +1,4 @@
-version: '3.8'
-
 services:
-  
   db:
     image: postgres:15-alpine
     container_name: postgres_db
@@ -14,21 +11,20 @@ services:
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  
   backend:
     build: ./backend
     ports:
-      - "3000:3000"  
+      - "3000:3000"
     environment:
-      - DATABASE_URL=postgres://user:password@db:5432/person_db
+      - DATABASE_URL=postgres://postgres:password@db:5432/person_db
     depends_on:
       - db
 
   frontend:
     build: ./frontend
     ports:
-      - "3001:3001" 
-    environment:
-      - PORT=3001
+      - "3001:5173"
+    depends_on:
+      - backend
     stdin_open: true
     tty: true
