@@ -15,6 +15,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
+
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
       setUser(parsed);
@@ -32,8 +33,9 @@ export default function ProfilePage() {
         method: 'PUT',
         body: JSON.stringify(editForm)
       });
+
       setUser(data.user);
-      localStorage.setItem('user', JSON.stringify(data.user)); // Update global session!
+      localStorage.setItem('user', JSON.stringify(data.user));
       setIsEditing(false);
     } catch (err) {
       alert("Error updating profile");
@@ -51,32 +53,41 @@ export default function ProfilePage() {
             </div>
             <div>
               {isEditing ? (
-                <input 
-                  className="standalone-input" 
-                  value={editForm.fullName} 
-                  onChange={e => setEditForm({...editForm, fullName: e.target.value})} 
-                  style={{marginBottom: '10px', height: '40px'}} 
+                <input
+                  className="standalone-input"
+                  value={editForm.fullName}
+                  onChange={e => setEditForm({ ...editForm, fullName: e.target.value })}
+                  style={{ marginBottom: '10px', height: '40px' }}
                 />
               ) : (
                 <h1>{user?.fullName || 'John Doe'}</h1>
               )}
+
               <p className="profile-role">
-                {user?.role === 'ENGINEER' ? <ShieldAlert size={16} /> : <Stethoscope size={16} />} 
+                {user?.role === 'ENGINEER' ? <ShieldAlert size={16} /> : <Stethoscope size={16} />}
                 {user?.role || 'Healthcare Professional'}
               </p>
+
               <div className="profile-meta">
                 <span><Mail size={15} /> {user?.email || 'john.doe@healthai.dev'}</span>
                 <span><MapPin size={15} /> Istanbul, Türkiye</span>
               </div>
             </div>
           </div>
+
           {isEditing ? (
-            <div style={{display: 'flex', gap: '10px'}}>
-              <button className="secondary-button" onClick={() => setIsEditing(false)}><X size={16}/> Cancel</button>
-              <button className="primary-button" style={{minHeight: '40px', padding: '0 20px'}} onClick={handleSave}><Check size={16}/> Save</button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button className="secondary-button" onClick={() => setIsEditing(false)}>
+                <X size={16} /> Cancel
+              </button>
+              <button className="primary-button" style={{ minHeight: '40px', padding: '0 20px' }} onClick={handleSave}>
+                <Check size={16} /> Save
+              </button>
             </div>
           ) : (
-            <button className="secondary-button" onClick={() => setIsEditing(true)}><Edit2 size={15} style={{marginRight: '6px'}}/> Edit Profile</button>
+            <button className="secondary-button" onClick={() => setIsEditing(true)}>
+              <Edit2 size={15} style={{ marginRight: '6px' }} /> Edit Profile
+            </button>
           )}
         </section>
 
@@ -84,30 +95,26 @@ export default function ProfilePage() {
           <div className="sidebar-card">
             <h3>About</h3>
             {isEditing ? (
-                <textarea 
-                  className="standalone-input" 
-                  value={editForm.bio} 
-                  onChange={e => setEditForm({...editForm, bio: e.target.value})} 
-                  style={{height: '100px', width: '100%', marginTop: '10px', padding: '10px'}} 
-                />
+              <textarea
+                className="standalone-input"
+                value={editForm.bio}
+                onChange={e => setEditForm({ ...editForm, bio: e.target.value })}
+                style={{ height: '100px', width: '100%', marginTop: '10px', padding: '10px' }}
+              />
             ) : (
-              <p>
-                {user?.bio || 'Passionate about applying AI in healthcare, particularly in radiology workflows, decision support systems, and early disease detection.'}
-              </p>
+              <p>{user?.bio || 'Passionate about applying AI in healthcare, particularly in radiology workflows, decision support systems, and early disease detection.'}</p>
             )}
-            
-            <h3 style={{marginTop: '20px'}}>Institution</h3>
+
+            <h3 style={{ marginTop: '20px' }}>Institution</h3>
             {isEditing ? (
-                <input 
-                  className="standalone-input" 
-                  value={editForm.institution} 
-                  onChange={e => setEditForm({...editForm, institution: e.target.value})} 
-                  style={{marginTop: '10px', height: '40px'}} 
-                />
+              <input
+                className="standalone-input"
+                value={editForm.institution}
+                onChange={e => setEditForm({ ...editForm, institution: e.target.value })}
+                style={{ marginTop: '10px', height: '40px' }}
+              />
             ) : (
-              <p>
-                {user?.institution || 'Not specified'}
-              </p>
+              <p>{user?.institution || 'Not specified'}</p>
             )}
           </div>
 

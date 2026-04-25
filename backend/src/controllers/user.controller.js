@@ -16,15 +16,18 @@ const getAllUsers = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const { fullName, bio, institution } = req.body;
-    
+    const userId = req.user.userId;
     const result = await pool.query(
       `UPDATE users
        SET full_name = $1, bio = $2, institution = $3
        WHERE id = $4
        RETURNING id, full_name, email, role, institution, bio`,
-      [fullName, bio || null, institution || null, req.user.userId]
+      [fullName, bio || null, institution || null, userId]
     );
 
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
     res.json({
       message: "Profile updated successfully",
       user: {
@@ -43,3 +46,4 @@ const updateProfile = async (req, res) => {
 };
 
 module.exports = { getAllUsers, updateProfile };
+

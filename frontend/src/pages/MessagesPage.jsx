@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import AppHeader from '../components/AppHeader';
 import SidebarProfile from '../components/SidebarProfile';
 import AddFriendModal from '../components/AddFriendModal';
-import { Search, MoreVertical, Send, Image as ImageIcon, Smile, Phone, Video, UserPlus } from 'lucide-react';
+import { MoreVertical, Send, Image as ImageIcon, Smile, Phone, Video, UserPlus } from 'lucide-react';
 import { apiFetch } from '../api';
+import { useParams } from 'react-router-dom';
 
 export default function MessagesPage() {
+  const { userId } = useParams();
   const [users, setUsers] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -13,7 +15,7 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
   const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
 
-  const currentUser = JSON.parse(localStorage.getItem('user'));
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
     fetchUsers();
@@ -30,8 +32,35 @@ export default function MessagesPage() {
       setLoading(true);
       const data = await apiFetch('/users');
       setUsers(data);
+
       if (data.length > 0) {
-        setActiveChat(data[0]);
+        if (userId) {
+          const selectedUser = data.find((u) => String(u.id) === String(userId));
+          setActiveChat(selectedUser || data[0]);
+          return;
+        }
+
+        let unreadUser = null;
+
+        for (const otherUser of data) {
+          const messages = await apiFetch(`/messages/${otherUser.id}`);
+
+          const lastReadKey = `lastRead_${currentUser.id}_${otherUser.id}`;
+          const lastRead = localStorage.getItem(lastReadKey);
+
+          const unreadExists = messages.some((msg) => {
+            const isIncoming = msg.sender_id !== currentUser.id;
+            const isNew = !lastRead || new Date(msg.created_at) > new Date(lastRead);
+            return isIncoming && isNew;
+          });
+
+          if (unreadExists) {
+            unreadUser = otherUser;
+            break;
+          }
+        }
+
+        setActiveChat(unreadUser || data[0]);
       }
     } catch (err) {
       console.error('Failed to fetch users', err);
@@ -40,10 +69,23 @@ export default function MessagesPage() {
     }
   };
 
-  const fetchMessages = async (userId) => {
+  const fetchMessages = async (chatUserId) => {
     try {
-      const data = await apiFetch(`/messages/${userId}`);
+      const data = await apiFetch(`/messages/${chatUserId}`);
       setMessages(data);
+
+      const latestIncomingMessage = data
+        .filter((msg) => msg.sender_id !== currentUser.id)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+
+      if (latestIncomingMessage) {
+        localStorage.setItem(
+          `lastRead_${currentUser.id}_${chatUserId}`,
+          latestIncomingMessage.created_at
+        );
+
+        window.dispatchEvent(new Event('unread-updated'));
+      }
     } catch (err) {
       console.error('Failed to fetch messages', err);
     }
@@ -60,6 +102,8 @@ export default function MessagesPage() {
           content: messageText
         })
       });
+
+      localStorage.setItem("hasUnread", "true");
       setMessageText('');
       fetchMessages(activeChat.id);
     } catch (err) {
@@ -70,10 +114,10 @@ export default function MessagesPage() {
   return (
     <div className="app-shell messages-shell">
       <AppHeader />
-      
+
       <main className="dashboard-layout messages-layout">
         <SidebarProfile />
-        
+
         <section className="messages-container">
           <div className="messages-sidebar">
             <div className="messages-sidebar-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -82,12 +126,14 @@ export default function MessagesPage() {
                 <UserPlus size={16} />
               </button>
             </div>
-            
+
             <div className="conversation-list">
-              {loading ? <p style={{padding: '24px', color: '#666'}}>Loading users...</p> : 
+              {loading ? (
+                <p style={{padding: '24px', color: '#666'}}>Loading users...</p>
+              ) : (
                 users.map(user => (
-                  <div 
-                    key={user.id} 
+                  <div
+                    key={user.id}
                     className={`conversation-item ${activeChat?.id === user.id ? 'active' : ''}`}
                     onClick={() => setActiveChat(user)}
                   >
@@ -100,7 +146,8 @@ export default function MessagesPage() {
                     </div>
                   </div>
                 ))
-              }
+              )}
+
               {!loading && users.length === 0 && (
                 <div style={{padding: '24px', color: '#64748b', textAlign: 'center'}}>
                   <p>No other users found in the system.</p>
@@ -109,7 +156,7 @@ export default function MessagesPage() {
               )}
             </div>
           </div>
-          
+
           <div className="messages-chat-view">
             {activeChat ? (
               <>
@@ -127,12 +174,12 @@ export default function MessagesPage() {
                     <MoreVertical size={18} />
                   </div>
                 </div>
-                
+
                 <div className="chat-bubbles-area">
                   {messages.length === 0 ? (
-                     <div style={{textAlign: 'center', color: '#94a3b8', marginTop: 'auto', marginBottom: 'auto'}}>
-                        No messages yet. Say hi!
-                     </div>
+                    <div style={{textAlign: 'center', color: '#94a3b8', marginTop: 'auto', marginBottom: 'auto'}}>
+                      No messages yet. Say hi!
+                    </div>
                   ) : (
                     messages.map((msg) => {
                       const isSentByMe = msg.sender_id === currentUser.id;
@@ -143,17 +190,17 @@ export default function MessagesPage() {
                             {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
-                      )
+                      );
                     })
                   )}
                 </div>
-                
+
                 <div className="chat-input-area">
                   <div className="chat-input-wrapper">
                     <ImageIcon size={18} className="input-icon" />
-                    <input 
-                      type="text" 
-                      placeholder="Type a message..." 
+                    <input
+                      type="text"
+                      placeholder="Type a message..."
                       value={messageText}
                       onChange={e => setMessageText(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
@@ -170,22 +217,17 @@ export default function MessagesPage() {
                 <Send size={48} style={{color: '#cbd5e1', marginBottom: '20px'}} />
                 <h2>Your Messages</h2>
                 <p>Select a user from the left sidebar to start chatting.</p>
-                {users.length === 0 && (
-                  <button className="primary-button" style={{marginTop: '20px'}} onClick={() => window.location.href='/register'}>
-                    Register A New User
-                  </button>
-                )}
               </div>
             )}
           </div>
         </section>
       </main>
 
-      <AddFriendModal 
-        isOpen={isAddFriendOpen} 
-        onClose={() => setIsAddFriendOpen(false)} 
-        users={users} 
-        onSelectUser={(u) => setActiveChat(u)} 
+      <AddFriendModal
+        isOpen={isAddFriendOpen}
+        onClose={() => setIsAddFriendOpen(false)}
+        users={users}
+        onSelectUser={(u) => setActiveChat(u)}
       />
     </div>
   );

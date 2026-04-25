@@ -18,6 +18,13 @@ const getMessagesWithUser = async (req, res) => {
       [currentUserId, otherUserId]
     );
 
+    await pool.query(
+      `UPDATE messages
+       SET is_read = true
+       WHERE sender_id = $1 AND receiver_id = $2`,
+      [otherUserId, currentUserId]
+    );
+
     res.json(result.rows);
   } catch (error) {
     console.error("GET MESSAGES ERROR:", error);
@@ -35,8 +42,9 @@ const sendMessage = async (req, res) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO messages (sender_id, receiver_id, content) 
-       VALUES ($1, $2, $3) RETURNING *`,
+      `INSERT INTO messages (sender_id, receiver_id, content, is_read)
+       VALUES ($1, $2, $3, false)
+       RETURNING *`,
       [senderId, receiverId, content]
     );
 
@@ -47,4 +55,22 @@ const sendMessage = async (req, res) => {
   }
 };
 
-module.exports = { getMessagesWithUser, sendMessage };
+const getUnreadCount = async (req, res) => {
+  try {
+    const currentUserId = req.user.userId;
+
+    const result = await pool.query(
+      `SELECT COUNT(*) 
+       FROM messages
+       WHERE receiver_id = $1 AND is_read = false`,
+      [currentUserId]
+    );
+
+    res.json({ count: Number(result.rows[0].count) });
+  } catch (error) {
+    console.error("GET UNREAD COUNT ERROR:", error);
+    res.status(500).json({ message: "Server error fetching unread count" });
+  }
+};
+
+module.exports = { getMessagesWithUser, sendMessage, getUnreadCount };

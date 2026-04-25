@@ -49,7 +49,12 @@ export default function MainPage() {
                 <p>No posts found.</p>
               ) : (
                 posts.map((post) => (
-                  <div key={post.id} className="article-card">
+                  <div 
+                    key={post.id} 
+                    className="article-card"
+                    onClick={() => navigate(`/messages/${post.author_id}`)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <h3>{post.title}</h3>
                     <p>{post.description}</p>
                     <p><strong>Expertise:</strong> {post.needed_expertise}</p>

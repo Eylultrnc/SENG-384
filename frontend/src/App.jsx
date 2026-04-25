@@ -17,7 +17,8 @@ export default function App() {
       <Route path="/main" element={<MainPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/messages" element={<MessagesPage />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/messages/:userId" element={<MessagesPage />} />
+      <Route path="*" element={<div>Page not found</div>} />
     </Routes>
   );
 }
