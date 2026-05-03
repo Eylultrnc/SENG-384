@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Mail, MapPin, Stethoscope, UserCircle2, ShieldAlert, Edit2, Check, X } from 'lucide-react';
 import AppHeader from '../components/AppHeader';
-import { profileStats, proposals } from '../data/mockData';
 import { apiFetch } from '../api';
 
 export default function ProfilePage() {
+  const [myPosts, setMyPosts] = useState([]);
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -26,7 +26,18 @@ export default function ProfilePage() {
       });
     }
   }, []);
+  useEffect(() => {
+    const fetchMyPosts = async () => {
+      try {
+        const data = await apiFetch('/posts/my-posts');
+        setMyPosts(data);
+      } catch (err) {
+        console.error('MY POSTS ERROR:', err);
+      }
+    };
 
+    fetchMyPosts();
+  }, []);
   const handleSave = async () => {
     try {
       const data = await apiFetch('/users/me', {
@@ -121,24 +132,36 @@ export default function ProfilePage() {
           <div className="sidebar-card">
             <h3>Highlights</h3>
             <div className="stats-grid">
-              {profileStats.map((item) => (
-                <div className="stat-card" key={item.label}>
-                  <strong>{item.value}</strong>
-                  <span>{item.label}</span>
-                </div>
-              ))}
+              <div className="stat-card">
+                <strong>{myPosts.length}</strong>
+                <span>Published proposals</span>
+              </div>
+
+              <div className="stat-card">
+                <strong>{myPosts.filter((p) => p.status === 'ACTIVE').length}</strong>
+                <span>Active proposals</span>
+              </div>
+
+              <div className="stat-card">
+                <strong>{myPosts.filter((p) => p.status === 'CLOSED').length}</strong>
+                <span>Closed proposals</span>
+              </div>
             </div>
           </div>
 
           <div className="sidebar-card profile-proposals">
             <h3>Recent Proposals</h3>
             <div className="proposal-list">
-              {proposals.map((proposal) => (
-                <div key={proposal.title} className="proposal-item">
-                  <h5>{proposal.title}</h5>
-                  <span>{proposal.submitted}</span>
-                </div>
-              ))}
+              {myPosts.length === 0 ? (
+                <p>No posts yet.</p>
+              ) : (
+                myPosts.map((post) => (
+                  <div key={post.id} className="proposal-item">
+                    <h5>{post.title}</h5>
+                    <span>{post.status}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </section>

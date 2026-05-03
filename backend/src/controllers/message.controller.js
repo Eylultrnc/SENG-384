@@ -73,4 +73,152 @@ const getUnreadCount = async (req, res) => {
   }
 };
 
-module.exports = { getMessagesWithUser, sendMessage, getUnreadCount };
+const sendCollaborationRequest = async (req, res) => {
+  try {
+    const senderId = req.user.userId;
+    const { receiverId, postId } = req.body;
+
+    if (!receiverId || !postId) {
+      return res.status(400).json({ message: "receiverId and postId are required" });
+    }
+
+    const existing = await pool.query(
+      `SELECT id FROM collaboration_requests
+       WHERE sender_id = $1 AND post_id = $2`,
+      [senderId, postId]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ message: "Already requested" });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO collaboration_requests (sender_id, receiver_id, post_id)
+       VALUES ($1, $2, $3)
+       RETURNING *`,
+      [senderId, receiverId, postId]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("SEND REQUEST ERROR:", err);
+    res.status(500).json({ message: "Error sending request" });
+  }
+};
+
+const getMyRequests = async (req, res) => {
+  try {
+    const currentUserId = req.user.userId;
+
+    const result = await pool.query(
+      `SELECT cr.*, 
+              u.full_name AS sender_name,
+              p.title AS post_title
+       FROM collaboration_requests cr
+       JOIN users u ON cr.sender_id = u.id
+       JOIN posts p ON cr.post_id = p.id
+       WHERE cr.receiver_id = $1 AND cr.status = 'PENDING'
+       ORDER BY cr.created_at DESC`,
+      [currentUserId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("GET REQUESTS ERROR:", err);
+    res.status(500).json({ message: "Error fetching requests" });
+  }
+};
+
+const respondToRequest = async (req, res) => {
+  try {
+    const { requestId, action } = req.body;
+
+    if (!['ACCEPTED', 'REJECTED'].includes(action)) {
+      return res.status(400).json({ message: "Invalid action" });
+    }
+
+    const result = await pool.query(
+      `UPDATE collaboration_requests
+       SET status = $1
+       WHERE id = $2
+       RETURNING *`,
+      [action, requestId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Request not found" });
+    }
+
+    if (action === "ACCEPTED") {
+      const postId = result.rows[0].post_id;
+
+      await pool.query(
+        `UPDATE posts SET status = 'CLOSED' WHERE id = $1`,
+        [postId]
+      );
+
+      await pool.query(
+        `UPDATE collaboration_requests
+         SET status = 'REJECTED'
+         WHERE post_id = $1 AND id != $2 AND status = 'PENDING'`,
+        [postId, requestId]
+      );
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("RESPOND REQUEST ERROR:", err);
+    res.status(500).json({ message: "Error responding request" });
+  }
+};
+
+const getAcceptedRequests = async (req, res) => {
+  try {
+    const currentUserId = req.user.userId;
+
+    const result = await pool.query(
+      `SELECT cr.*,
+              u.full_name AS receiver_name,
+              p.title AS post_title
+       FROM collaboration_requests cr
+       JOIN users u ON cr.receiver_id = u.id
+       JOIN posts p ON cr.post_id = p.id
+       WHERE cr.sender_id = $1 AND cr.status = 'ACCEPTED'
+       ORDER BY cr.created_at DESC`,
+      [currentUserId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("GET ACCEPTED REQUESTS ERROR:", err);
+    res.status(500).json({ message: "Error fetching accepted requests" });
+  }
+};
+const scheduleMeeting = async (req, res) => {
+  try {
+    const requesterId = req.user.userId;
+    const { receiverId, postId, meetingTime } = req.body;
+
+    const result = await pool.query(
+      `INSERT INTO meetings (requester_id, receiver_id, post_id, meeting_time)
+       VALUES ($1, $2, $3, $4)
+       RETURNING *`,
+      [requesterId, receiverId, postId, meetingTime]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("SCHEDULE MEETING ERROR:", err);
+    res.status(500).json({ message: "Error scheduling meeting" });
+  }
+};
+module.exports = {
+  getMessagesWithUser,
+  sendMessage,
+  getUnreadCount,
+  sendCollaborationRequest,
+  getMyRequests,
+  respondToRequest,
+  getAcceptedRequests,
+  scheduleMeeting
+};

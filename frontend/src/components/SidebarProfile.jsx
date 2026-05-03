@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { UserCircle2 } from 'lucide-react';
-import { proposals } from '../data/mockData';
 import { Link } from 'react-router-dom';
 import { apiFetch } from '../api';
 
 export default function SidebarProfile() {
   const [user, setUser] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [requests, setRequests] = useState([]);
+  const [acceptedRequests, setAcceptedRequests] = useState([]);
+  const [myPosts, setMyPosts] = useState([]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
   useEffect(() => {
@@ -26,11 +26,65 @@ export default function SidebarProfile() {
     };
 
     fetchUnreadCount();
-
     const interval = setInterval(fetchUnreadCount, 5000);
-
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const data = await apiFetch('/messages/requests');
+        setRequests(data);
+      } catch (err) {
+        console.error('REQUEST ERROR:', err);
+      }
+    };
+
+    fetchRequests();
+    const interval = setInterval(fetchRequests, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const fetchAcceptedRequests = async () => {
+      try {
+        const data = await apiFetch('/messages/requests/accepted');
+        setAcceptedRequests(data);
+      } catch (err) {
+        console.error('ACCEPTED REQUEST ERROR:', err);
+      }
+    };
+
+    fetchAcceptedRequests();
+    const interval = setInterval(fetchAcceptedRequests, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const fetchMyPosts = async () => {
+      try {
+        const data = await apiFetch('/posts/my-posts');
+        setMyPosts(data);
+      } catch (err) {
+        console.error('MY POSTS ERROR:', err);
+      }
+    };
+
+    fetchMyPosts();
+  }, []);
+
+  const respondRequest = async (requestId, action) => {
+    try {
+      await apiFetch('/messages/request/respond', {
+        method: 'POST',
+        body: JSON.stringify({ requestId, action })
+      });
+
+      setRequests(requests.filter((req) => req.id !== requestId));
+    } catch (err) {
+      console.error('RESPOND REQUEST ERROR:', err);
+    }
+  };
 
   return (
     <aside className="sidebar">
@@ -63,29 +117,124 @@ export default function SidebarProfile() {
           }}
         >
           <span>DMs & Messages</span>
-
-          {unreadCount > 0 && (
-            <span className="notification-dot"></span>
-          )}
+          {unreadCount > 0 && <span className="notification-dot"></span>}
         </Link>
+
+        {requests.length > 0 && (
+          <div style={{ marginTop: '12px', padding: '12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <strong style={{ fontSize: '14px' }}>New Requests</strong>
+
+            {requests.map((req) => (
+              <div key={req.id} style={{ marginTop: '10px', fontSize: '13px' }}>
+                <p style={{ margin: 0 }}>{req.sender_name}</p>
+                <p style={{ margin: 0, fontWeight: '600' }}>{req.post_title}</p>
+
+                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    style={{ padding: '6px 10px', minHeight: '32px', fontSize: '12px' }}
+                    onClick={() => respondRequest(req.id, 'ACCEPTED')}
+                  >
+                    Accept
+                  </button>
+
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    style={{ padding: '6px 10px', minHeight: '32px', fontSize: '12px' }}
+                    onClick={() => respondRequest(req.id, 'REJECTED')}
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {acceptedRequests.length > 0 && (
+          <div style={{ marginTop: '12px', padding: '12px', background: '#ecfdf5', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
+            <strong style={{ fontSize: '14px' }}>Accepted Requests</strong>
+
+            {acceptedRequests.map((req) => (
+              <div key={req.id} style={{ marginTop: '10px', fontSize: '13px' }}>
+                <p style={{ margin: 0 }}>{req.receiver_name} accepted your request</p>
+                <p style={{ margin: 0, fontWeight: '600' }}>{req.post_title}</p>
+
+                <div className="accepted-actions">
+                  <Link
+                    to={`/messages/${req.receiver_id}`}
+                    className="accepted-action-button"
+                  >
+                    Open DM
+                  </Link>
+
+                  <button
+                    type="button"
+                    className="accepted-action-button"
+                    onClick={async () => {
+                      const time = prompt("Enter meeting time (YYYY-MM-DD HH:mm)");
+                      if (!time) return;
+
+                      try {
+                        await apiFetch('/messages/meeting', {
+                          method: 'POST',
+                          body: JSON.stringify({
+                            receiverId: req.receiver_id,
+                            postId: req.post_id,
+                            meetingTime: time
+                          })
+                        });
+
+                        alert('Meeting scheduled 📅');
+                      } catch (err) {
+                        console.error(err);
+                        alert('Failed');
+                      }
+                    }}
+                  >
+                    Schedule
+                  </button>
+
+                  <button
+                    type="button"
+                    className="accepted-action-button accepted-action-muted"
+                    onClick={() =>
+                      setAcceptedRequests(
+                        acceptedRequests.filter((r) => r.id !== req.id)
+                      )
+                    }
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="sidebar-card">
         <h4>About Me</h4>
         <p>
-          Passionate about leveraging AI to improve healthcare outcomes. Specializing in medical imaging and diagnostic tools.
+          {user?.bio || 'No bio added yet.'}
         </p>
       </div>
 
       <div className="sidebar-card">
-        <h4>Recent Proposals</h4>
+        <h4>My Posts</h4>
         <div className="proposal-list">
-          {proposals.map((proposal) => (
-            <div key={proposal.title} className="proposal-item">
-              <h5>{proposal.title}</h5>
-              <span>{proposal.submitted}</span>
-            </div>
-          ))}
+          {myPosts.length === 0 ? (
+            <p style={{ color: '#64748b' }}>No posts yet.</p>
+          ) : (
+            myPosts.map((post) => (
+              <div key={post.id} className="proposal-item">
+                <h5>{post.title}</h5>
+                <span>{post.status}</span>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </aside>
