@@ -11,6 +11,21 @@ export default function MainPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isToastActive, setIsToastActive] = useState(false);
+
+  useEffect(() => {
+    const handleUnreadCount = (e) => setUnreadCount(e.detail);
+    const handleToastState = (e) => setIsToastActive(e.detail);
+    
+    window.addEventListener('unreadCountChanged', handleUnreadCount);
+    window.addEventListener('toastStateChanged', handleToastState);
+    
+    return () => {
+      window.removeEventListener('unreadCountChanged', handleUnreadCount);
+      window.removeEventListener('toastStateChanged', handleToastState);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -74,7 +89,29 @@ export default function MainPage() {
         onPostCreated={(newPost) => setPosts([newPost, ...posts])} 
       />
 
-      <button className="floating-action" onClick={() => navigate('/messages')}>➤</button>
+      <button className="floating-action" onClick={() => navigate('/messages')}>
+        ➤
+        {unreadCount > 0 && !isToastActive && (
+          <span style={{
+            position: 'absolute',
+            top: '-5px',
+            right: '-5px',
+            backgroundColor: '#ef4444',
+            color: 'white',
+            borderRadius: '50%',
+            width: '20px',
+            height: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            border: '2px solid white'
+          }}>
+            {unreadCount}
+          </span>
+        )}
+      </button>
     </div>
   );
 }  

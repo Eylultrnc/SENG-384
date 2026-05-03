@@ -53,11 +53,14 @@ const sendMessage = async (req, res) => {
     // Auto-reply logic: Simulate a response from the receiver
     // This allows the user to test the DM messaging flow without needing a second active user.
     const mockResponses = [
-      "Mock Data: Patient HR is 75 bpm, BP is 120/80 mmHg. No anomalies detected.",
-      "Mock Data: Processing scan results... Lung nodules detected in upper right lobe (Confidence: 87%).",
-      "Mock Data: User profile updated with the latest clinical trials matching 'Diabetes Risk Prediction'.",
-      "Mock Data: Generating summary of recent EHR records: Patient has a history of mild hypertension and type 2 diabetes. Currently on Metformin.",
-      "Mock Data: Found 3 new collaboration requests for 'EHR Data Analysis Tool'."
+      "Harika bir nokta! Bu konuyu biraz daha detaylandırabilir misin?",
+      "Evet, kesinlikle katılıyorum. Peki sence bu sistem hastanelerde nasıl uygulanabilir?",
+      "Bu çok ilginç bir yaklaşım. Veri gizliliği (HIPAA vb.) konusunda nasıl bir önlem almayı planlıyorsun?",
+      "Şu an bahsettiğin detaylar mantıklı duruyor, bir sonraki aşamada ne gibi testler yapmalıyız sence?",
+      "Anlıyorum. Peki sence mevcut yapay zeka modelleri bu işlemi ne kadar sürede tamamlar?",
+      "Dediğin gibi yaparsak doğruluk payı artabilir. Buna ek olarak bir radyolog görüşü almak da faydalı olur.",
+      "Kesinlikle. Ben de EHR verilerinin analizinde benzer sorunlarla karşılaşmıştım, çözüm önerin harika.",
+      "İlginç... Bu anlattıklarını projenin bir sonraki fazına ekleyelim mi?",
     ];
     const autoReplyContent = mockResponses[Math.floor(Math.random() * mockResponses.length)];
     
@@ -72,7 +75,7 @@ const sendMessage = async (req, res) => {
       } catch (err) {
         console.error("AUTO REPLY ERROR:", err);
       }
-    }, 1000); // 1 second delay to simulate typing/processing
+    }, 10000); // 10 second delay to simulate typing/processing
 
     res.status(201).json(sentMessage);
   } catch (error) {
@@ -92,7 +95,19 @@ const getUnreadCount = async (req, res) => {
       [currentUserId]
     );
 
-    res.json({ count: Number(result.rows[0].count) });
+    const latestMessage = await pool.query(
+      `SELECT m.*, u.full_name as sender_name 
+       FROM messages m
+       JOIN users u ON m.sender_id = u.id
+       WHERE m.receiver_id = $1 AND m.is_read = false
+       ORDER BY m.created_at DESC LIMIT 1`,
+      [currentUserId]
+    );
+
+    res.json({ 
+      count: Number(result.rows[0].count),
+      latestMessage: latestMessage.rows[0] || null
+    });
   } catch (error) {
     console.error("GET UNREAD COUNT ERROR:", error);
     res.status(500).json({ message: "Server error fetching unread count" });

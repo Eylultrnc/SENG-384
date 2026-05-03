@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { UserCircle2 } from 'lucide-react';
 import { proposals } from '../data/mockData';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api';
 
 export default function SidebarProfile() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [toastMessage, setToastMessage] = useState(null);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('toastStateChanged', { detail: !!toastMessage }));
+  }, [toastMessage]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -19,7 +25,27 @@ export default function SidebarProfile() {
     const fetchUnreadCount = async () => {
       try {
         const data = await apiFetch('/messages/unread-count');
-        setUnreadCount(Number(data.count) || 0);
+        const count = Number(data.count) || 0;
+        setUnreadCount(count);
+
+        // Broadcast count so other components (like MainPage) can show a badge
+        window.dispatchEvent(new CustomEvent('unreadCountChanged', { detail: count }));
+
+        // Show Toast if there is a new unread message
+        if (data.latestMessage) {
+          const lastNotifiedId = localStorage.getItem('lastNotifiedMessageId');
+          if (String(data.latestMessage.id) !== lastNotifiedId) {
+            setToastMessage({
+              sender: data.latestMessage.sender_name,
+              content: data.latestMessage.content,
+              time: new Date(data.latestMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+            localStorage.setItem('lastNotifiedMessageId', String(data.latestMessage.id));
+
+            // Hide toast after 5 seconds
+            setTimeout(() => setToastMessage(null), 5000);
+          }
+        }
       } catch (err) {
         console.error('UNREAD COUNT ERROR:', err);
       }
@@ -33,6 +59,7 @@ export default function SidebarProfile() {
   }, []);
 
   return (
+    <>
     <aside className="sidebar">
       <div className="sidebar-card profile-card">
         <div className="profile-card__header">
@@ -64,7 +91,7 @@ export default function SidebarProfile() {
         >
           <span>DMs & Messages</span>
 
-          {unreadCount > 0 && (
+          {unreadCount > 0 && !toastMessage && (
             <span className="notification-dot"></span>
           )}
         </Link>
@@ -89,5 +116,36 @@ export default function SidebarProfile() {
         </div>
       </div>
     </aside>
+    {toastMessage && (
+      <div 
+        onClick={() => {
+          setToastMessage(null);
+          navigate('/messages');
+        }}
+        style={{
+        position: 'fixed',
+        top: '80px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: '#1e293b',
+        color: '#fff',
+        padding: '12px 24px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        zIndex: 99999,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px',
+        cursor: 'pointer',
+        animation: 'slideDown 0.3s ease-out'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <strong style={{ fontSize: '14px', color: '#94a3b8' }}>Yeni mesaj: {toastMessage.sender}</strong>
+          <span style={{ fontSize: '12px', color: '#64748b', marginLeft: '16px' }}>{toastMessage.time}</span>
+        </div>
+        <span style={{ fontSize: '15px' }}>{toastMessage.content}</span>
+      </div>
+    )}
+    </>
   );
 }
