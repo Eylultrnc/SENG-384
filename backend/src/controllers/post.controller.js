@@ -66,49 +66,44 @@ const createPost = async (req, res) => {
 
 const getAllPosts = async (req, res) => {
   try {
-    const { city, country, working_domain, needed_expertise, project_stage, status } = req.query;
+    const { query, domain, expertise, status } = req.query;
 
-    let query = `
+    let sql = `
       SELECT p.*, u.full_name AS author_name, u.role AS author_role
       FROM posts p
       JOIN users u ON p.author_id = u.id
       WHERE 1=1
     `;
-    const values = [];
-    let index = 1;
 
-    if (city) {
-      query += ` AND p.city = $${index++}`;
-      values.push(city);
+    const params = [];
+
+    if (query) {
+      params.push(`%${query}%`);
+      sql += ` AND (p.title ILIKE $${params.length} OR p.description ILIKE $${params.length})`;
     }
-    if (country) {
-      query += ` AND p.country = $${index++}`;
-      values.push(country);
+
+    if (domain) {
+      params.push(`%${domain}%`);
+      sql += ` AND p.working_domain ILIKE $${params.length}`;
     }
-    if (working_domain) {
-      query += ` AND p.working_domain = $${index++}`;
-      values.push(working_domain);
+
+    if (expertise) {
+      params.push(`%${expertise}%`);
+      sql += ` AND p.needed_expertise ILIKE $${params.length}`;
     }
-    if (needed_expertise) {
-      query += ` AND p.needed_expertise = $${index++}`;
-      values.push(needed_expertise);
-    }
-    if (project_stage) {
-      query += ` AND p.project_stage = $${index++}`;
-      values.push(project_stage);
-    }
+
     if (status) {
-      query += ` AND p.status = $${index++}`;
-      values.push(status);
+      params.push(status);
+      sql += ` AND p.status = $${params.length}`;
     }
 
-    query += ` ORDER BY p.created_at DESC`;
+    sql += ` ORDER BY p.created_at DESC`;
 
-    const result = await pool.query(query, values);
+    const result = await pool.query(sql, params);
     res.json(result.rows);
   } catch (error) {
     console.error("GET POSTS ERROR:", error);
-    res.status(500).json({ message: "Server error while fetching posts" });
+    res.status(500).json({ message: "Server error fetching posts" });
   }
 };
 
@@ -254,11 +249,92 @@ const updatePostStatus = async (req, res) => {
     res.status(500).json({ message: "Server error while updating post status" });
   }
 };
+const closePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
 
+    await pool.query(
+      `UPDATE posts SET status = 'CLOSED' WHERE id = $1`,
+      [postId]
+    );
+
+    res.json({ message: "Post closed" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error closing post" });
+  }
+};
+const getMyPosts = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const result = await pool.query(
+      `SELECT id, title, status
+       FROM posts
+       WHERE author_id = $1
+       ORDER BY created_at DESC`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('GET MY POSTS ERROR:', err);
+    res.status(500).json({ message: 'Error fetching my posts' });
+  }
+};
+const publishPost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.user.userId;
+
+    const result = await pool.query(
+      `UPDATE posts
+       SET status = 'ACTIVE'
+       WHERE id = $1 AND author_id = $2
+       RETURNING *`,
+      [postId, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('PUBLISH POST ERROR:', err);
+    res.status(500).json({ message: 'Error publishing post' });
+  }
+};
+const deletePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.user.userId;
+
+    const result = await pool.query(
+      `DELETE FROM posts 
+       WHERE id = $1 AND author_id = $2
+       RETURNING *`,
+      [postId, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Post not found or not yours" });
+    }
+
+    res.json({ message: "Post deleted" });
+  } catch (err) {
+    console.error("DELETE POST ERROR:", err);
+    res.status(500).json({ message: "Error deleting post" });
+  }
+};
 module.exports = {
   createPost,
   getAllPosts,
   getPostById,
   updatePost,
   updatePostStatus,
+  closePost,
+  getMyPosts,
+  publishPost,
+  deletePost
 }; 
