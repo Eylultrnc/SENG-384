@@ -48,7 +48,33 @@ const sendMessage = async (req, res) => {
       [senderId, receiverId, content]
     );
 
-    res.status(201).json(result.rows[0]);
+    const sentMessage = result.rows[0];
+
+    // Auto-reply logic: Simulate a response from the receiver
+    // This allows the user to test the DM messaging flow without needing a second active user.
+    const mockResponses = [
+      "Mock Data: Patient HR is 75 bpm, BP is 120/80 mmHg. No anomalies detected.",
+      "Mock Data: Processing scan results... Lung nodules detected in upper right lobe (Confidence: 87%).",
+      "Mock Data: User profile updated with the latest clinical trials matching 'Diabetes Risk Prediction'.",
+      "Mock Data: Generating summary of recent EHR records: Patient has a history of mild hypertension and type 2 diabetes. Currently on Metformin.",
+      "Mock Data: Found 3 new collaboration requests for 'EHR Data Analysis Tool'."
+    ];
+    const autoReplyContent = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+    
+    // Insert the auto-reply asynchronously so we don't block the initial response
+    setTimeout(async () => {
+      try {
+        await pool.query(
+          `INSERT INTO messages (sender_id, receiver_id, content, is_read)
+           VALUES ($1, $2, $3, false)`,
+          [receiverId, senderId, autoReplyContent]
+        );
+      } catch (err) {
+        console.error("AUTO REPLY ERROR:", err);
+      }
+    }, 1000); // 1 second delay to simulate typing/processing
+
+    res.status(201).json(sentMessage);
   } catch (error) {
     console.error("SEND MESSAGE ERROR:", error);
     res.status(500).json({ message: "Server error sending message" });

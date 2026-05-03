@@ -17,6 +17,11 @@ export default function LoginLandingPage() {
     e.preventDefault();
     setError('');
 
+    if (!email.endsWith('.edu') && !email.endsWith('.edu.tr')) {
+      setError('Sadece .edu veya .edu.tr uzantılı e-posta adresleri ile giriş yapabilirsiniz.');
+      return;
+    }
+
     try {
       const data = await apiFetch('/auth/login', {
         method: 'POST',

@@ -106,6 +106,11 @@ export default function MessagesPage() {
       localStorage.setItem("hasUnread", "true");
       setMessageText('');
       fetchMessages(activeChat.id);
+
+      // Fetch again after a short delay to get the auto-reply from the server
+      setTimeout(() => {
+        fetchMessages(activeChat.id);
+      }, 1500);
     } catch (err) {
       console.error('Failed to send message', err);
     }
