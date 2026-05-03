@@ -74,6 +74,7 @@ CREATE TABLE messages (
     sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     receiver_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 

@@ -15,11 +15,11 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // if (!isEduEmail(email)) {
-    //   return res.status(400).json({
-    //     message: "Only institutional .edu or .edu.tr emails are allowed",
-    //   });
-    // }
+    if (!isEduEmail(email)) {
+      return res.status(400).json({
+        message: "Sadece .edu veya .edu.tr uzantılı e-posta adresleri ile kayıt olabilirsiniz.",
+      });
+    }
 
     if (role.toUpperCase() === "ADMIN") {
       return res.status(403).json({
@@ -105,6 +105,10 @@ const login = async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    if (!isEduEmail(email)) {
+      return res.status(400).json({ message: "Sadece .edu veya .edu.tr uzantılı e-posta adresleri ile giriş yapabilirsiniz." });
     }
 
     const result = await pool.query(

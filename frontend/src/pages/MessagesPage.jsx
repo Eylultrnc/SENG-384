@@ -25,6 +25,16 @@ export default function MessagesPage() {
     if (activeChat) {
       fetchMessages(activeChat.id);
     }
+    
+    // Listen for global unread updates to refresh the chat view when a new auto-reply comes in
+    const handleNewMessage = () => {
+      if (activeChat) {
+        fetchMessages(activeChat.id);
+      }
+    };
+    
+    window.addEventListener('unreadCountChanged', handleNewMessage);
+    return () => window.removeEventListener('unreadCountChanged', handleNewMessage);
   }, [activeChat]);
 
   const fetchUsers = async () => {
