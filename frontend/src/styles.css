@@ -749,11 +749,8 @@ button, input { font: inherit; }
 
 .chat-input-wrapper {
   display: flex;
+  gap: 10px;
   align-items: center;
-  background: #f1f5f9;
-  border-radius: 24px;
-  padding: 8px 16px;
-  gap: 12px;
 }
 
 .input-icon { color: #64748b; cursor: pointer; }
@@ -1075,4 +1072,26 @@ button, input { font: inherit; }
 
 .accepted-action-muted {
   color: #64748b;
+}
+.meeting-banner {
+  margin: 12px 18px;
+  padding: 12px 14px;
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  border-radius: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.meeting-banner p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.meeting-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }

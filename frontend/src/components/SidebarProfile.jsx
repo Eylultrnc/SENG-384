@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { UserCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { apiFetch } from '../api';
+import ScheduleMeetingModal from './ScheduleMeetingModal';
 
 export default function SidebarProfile() {
   const [user, setUser] = useState(null);
@@ -9,7 +10,9 @@ export default function SidebarProfile() {
   const [requests, setRequests] = useState([]);
   const [acceptedRequests, setAcceptedRequests] = useState([]);
   const [myPosts, setMyPosts] = useState([]);
-
+  const [meetings, setMeetings] = useState([]);
+  const [meetingModalRequest, setMeetingModalRequest] = useState(null);
+  
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) setUser(JSON.parse(storedUser));
@@ -72,7 +75,18 @@ export default function SidebarProfile() {
 
     fetchMyPosts();
   }, []);
+  useEffect(() => {
+  const fetchMeetings = async () => {
+    try {
+      const data = await apiFetch('/messages/meetings');
+      setMeetings(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
+  fetchMeetings();
+}, []);
   const respondRequest = async (requestId, action) => {
     try {
       await apiFetch('/messages/request/respond', {
@@ -173,26 +187,7 @@ export default function SidebarProfile() {
                   <button
                     type="button"
                     className="accepted-action-button"
-                    onClick={async () => {
-                      const time = prompt("Enter meeting time (YYYY-MM-DD HH:mm)");
-                      if (!time) return;
-
-                      try {
-                        await apiFetch('/messages/meeting', {
-                          method: 'POST',
-                          body: JSON.stringify({
-                            receiverId: req.receiver_id,
-                            postId: req.post_id,
-                            meetingTime: time
-                          })
-                        });
-
-                        alert('Meeting scheduled 📅');
-                      } catch (err) {
-                        console.error(err);
-                        alert('Failed');
-                      }
-                    }}
+                    onClick={() => setMeetingModalRequest(req)}
                   >
                     Schedule
                   </button>
@@ -237,6 +232,28 @@ export default function SidebarProfile() {
           )}
         </div>
       </div>
+      {meetings.length > 0 && (
+        <div className="sidebar-card">
+          <h4>Scheduled Meetings</h4>
+
+          {meetings.map((m) => (
+            <div key={m.id} style={{ marginTop: '10px', fontSize: '13px' }}>
+              <p style={{ margin: 0, fontWeight: '600' }}>{m.post_title}</p>
+              <p style={{ margin: 0 }}>
+                {new Date(m.meeting_time).toLocaleString()}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+      <ScheduleMeetingModal
+        isOpen={!!meetingModalRequest}
+        request={meetingModalRequest}
+        onClose={() => setMeetingModalRequest(null)}
+        onScheduled={(newMeeting) => {
+          setMeetings([newMeeting, ...meetings]);
+        }}
+      />
     </aside>
   );
 }

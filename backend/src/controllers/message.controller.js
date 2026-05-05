@@ -240,17 +240,129 @@ const scheduleMeeting = async (req, res) => {
     const requesterId = req.user.userId;
     const { receiverId, postId, meetingTime } = req.body;
 
+    if (!receiverId || !postId || !meetingTime) {
+      return res.status(400).json({ message: "receiverId, postId and meetingTime are required" });
+    }
+
+    const meetingDate = new Date(meetingTime);
+
+    if (meetingDate <= new Date()) {
+      return res.status(400).json({ message: "Meeting time must be in the future" });
+    }
+
     const result = await pool.query(
-      `INSERT INTO meetings (requester_id, receiver_id, post_id, meeting_time)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO meetings (requester_id, receiver_id, post_id, meeting_time, status)
+       VALUES ($1, $2, $3, $4, 'PENDING')
        RETURNING *`,
       [requesterId, receiverId, postId, meetingTime]
+    );
+
+    await pool.query(
+      `UPDATE posts SET status = 'MEETING_SCHEDULED' WHERE id = $1`,
+      [postId]
+    );
+
+    await pool.query(
+      `INSERT INTO messages (sender_id, receiver_id, content, is_read)
+       VALUES ($1, $2, $3, false)`,
+      [
+        requesterId,
+        receiverId,
+        `📅 Meeting scheduled. Check the meeting banner above for the meeting time.`
+      ]
     );
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error("SCHEDULE MEETING ERROR:", err);
     res.status(500).json({ message: "Error scheduling meeting" });
+  }
+};
+const getMyMeetings = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const result = await pool.query(
+      `SELECT m.*, 
+              u1.full_name AS requester_name,
+              u2.full_name AS receiver_name,
+              p.title AS post_title
+       FROM meetings m
+       JOIN users u1 ON m.requester_id = u1.id
+       JOIN users u2 ON m.receiver_id = u2.id
+       JOIN posts p ON m.post_id = p.id
+       WHERE m.requester_id = $1 OR m.receiver_id = $1
+       ORDER BY m.meeting_time ASC`,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("GET MEETINGS ERROR:", err);
+    res.status(500).json({ message: "Error fetching meetings" });
+  }
+};
+const respondToMeeting = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { meetingId, action } = req.body;
+
+    if (!['ACCEPTED', 'DECLINED'].includes(action)) {
+      return res.status(400).json({ message: 'Invalid action' });
+    }
+
+    const result = await pool.query(
+      `UPDATE meetings
+       SET status = $1
+       WHERE id = $2 AND receiver_id = $3
+       RETURNING *`,
+      [action, meetingId, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('RESPOND MEETING ERROR:', err);
+    res.status(500).json({ message: 'Error responding to meeting' });
+  }
+};
+
+const rescheduleMeeting = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { meetingId, meetingTime } = req.body;
+
+    if (!meetingTime || new Date(meetingTime) <= new Date()) {
+      return res.status(400).json({ message: 'Meeting time must be in the future' });
+    }
+
+    const result = await pool.query(
+      `UPDATE meetings
+       SET meeting_time = $1, status = 'PENDING'
+       WHERE id = $2 AND requester_id = $3
+       RETURNING *`,
+      [meetingTime, meetingId, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+    await pool.query(
+      `INSERT INTO messages (sender_id, receiver_id, content, is_read)
+      VALUES ($1, $2, $3, false)`,
+      [
+        userId,
+        result.rows[0].receiver_id,
+        `📅 Meeting rescheduled. Check the meeting banner above for the updated time.`
+      ]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('RESCHEDULE MEETING ERROR:', err);
+    res.status(500).json({ message: 'Error rescheduling meeting' });
   }
 };
 module.exports = {
@@ -261,5 +373,8 @@ module.exports = {
   getMyRequests,
   respondToRequest,
   getAcceptedRequests,
-  scheduleMeeting
+  scheduleMeeting,
+  getMyMeetings,
+  respondToMeeting,
+  rescheduleMeeting
 };
