@@ -17,7 +17,8 @@ const register = async (req, res) => {
 
     if (!isEduEmail(email)) {
       return res.status(400).json({
-        message: "Sadece .edu veya .edu.tr uzantılı e-posta adresleri ile kayıt olabilirsiniz.",
+        message:
+          "Sadece .edu veya .edu.tr uzantılı e-posta adresleri ile kayıt olabilirsiniz.",
       });
     }
 
@@ -50,7 +51,7 @@ const register = async (req, res) => {
         passwordHash,
         role.toUpperCase(),
         institution || null,
-        "PENDING_VERIFICATION",
+        "PENDING_VERIFICATION", // SENİN DOĞRU MANTIĞIN
         false,
         verificationToken,
       ]
@@ -83,7 +84,9 @@ const verifyEmail = async (req, res) => {
     const { token } = req.query;
 
     if (!token) {
-      return res.status(400).json({ message: "Verification token is required" });
+      return res
+        .status(400)
+        .json({ message: "Verification token is required" });
     }
 
     const result = await pool.query(
@@ -97,7 +100,9 @@ const verifyEmail = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(400).json({ message: "Invalid or expired token" });
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired token" });
     }
 
     return res.status(200).json({
@@ -106,7 +111,9 @@ const verifyEmail = async (req, res) => {
     });
   } catch (error) {
     console.error("VERIFY EMAIL ERROR:", error);
-    return res.status(500).json({ message: "Server error during email verification" });
+    return res
+      .status(500)
+      .json({ message: "Server error during email verification" });
   }
 };
 
@@ -115,12 +122,15 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
 
     if (!isEduEmail(email)) {
       return res.status(400).json({
-        message: "Sadece .edu veya .edu.tr uzantılı e-posta adresleri ile giriş yapabilirsiniz.",
+        message:
+          "Sadece .edu veya .edu.tr uzantılı e-posta adresleri ile giriş yapabilirsiniz.",
       });
     }
 
@@ -142,7 +152,9 @@ const login = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res
+        .status(401)
+        .json({ message: "Invalid email or password" });
     }
 
     const user = result.rows[0];
@@ -159,10 +171,15 @@ const login = async (req, res) => {
       });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(password, user.password_hash);
+    const isPasswordCorrect = await bcrypt.compare(
+      password,
+      user.password_hash
+    );
 
     if (!isPasswordCorrect) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res
+        .status(401)
+        .json({ message: "Invalid email or password" });
     }
 
     await pool.query(

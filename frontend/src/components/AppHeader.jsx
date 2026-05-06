@@ -1,6 +1,6 @@
-import { ArrowLeft, Home, UserCircle2 } from 'lucide-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import React, { useState } from 'react';
+import { ArrowLeft, Home, UserCircle2 } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
 
 export default function AppHeader() {
   const [showMenu, setShowMenu] = useState(false);
@@ -8,16 +8,16 @@ export default function AppHeader() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
   };
 
   const isHomePage =
-    location.pathname === '/main' || location.pathname === '/';
+    location.pathname === "/main" || location.pathname === "/";
 
   return (
     <header className="app-header">
@@ -44,12 +44,12 @@ export default function AppHeader() {
 
       {showMenu && (
         <div className="profile-menu">
-          <button onClick={() => navigate('/profile')}>
+          <button onClick={() => navigate("/profile")}>
             Profile
           </button>
 
-          {currentUser?.role === 'ADMIN' && (
-            <button onClick={() => navigate('/admin')}>
+          {currentUser?.role === "ADMIN" && (
+            <button onClick={() => navigate("/admin")}>
               Admin Panel
             </button>
           )}
