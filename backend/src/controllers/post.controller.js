@@ -36,7 +36,7 @@ const createPost = async (req, res) => {
       (author_id, title, description, needed_expertise, working_domain, project_stage,
        collaboration_type, commitment_level, confidentiality_level, city, country, status, expiry_date, created_at, updated_at)
       VALUES
-      ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'DRAFT',$12,NOW(),NOW())
+      ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'DRAFT',COALESCE($12, NOW() + INTERVAL '30 days'),NOW(),NOW())
       RETURNING *`,
       [
         req.user.userId,
@@ -93,8 +93,12 @@ const getAllPosts = async (req, res) => {
     }
 
     if (status) {
-      params.push(status);
-      sql += ` AND p.status = $${params.length}`;
+      if (status === 'EXPIRED') {
+        sql += ` AND (p.status = 'EXPIRED' OR p.expiry_date < NOW())`;
+      } else {
+        params.push(status);
+        sql += ` AND p.status = $${params.length}`;
+      }
     }
 
     sql += ` ORDER BY p.created_at DESC`;

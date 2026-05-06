@@ -226,7 +226,7 @@ export default function SidebarProfile() {
             myPosts.map((post) => (
               <div key={post.id} className="proposal-item">
                 <h5>{post.title}</h5>
-                <span>{post.status}</span>
+                <span>{post.status === 'MEETING_SCHEDULED' ? 'CLOSED' : post.status}</span>
               </div>
             ))
           )}

@@ -5,6 +5,7 @@ import CreatePostModal from '../components/CreatePostModal';
 import { apiFetch } from '../api';
 import { MoreVertical } from 'lucide-react';
 import EditPostModal from '../components/EditPostModal';
+import NDAModal from '../components/NDAModal';
 
 export default function MainPage() {
   const [posts, setPosts] = useState([]);
@@ -13,6 +14,7 @@ export default function MainPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [editingPost, setEditingPost] = useState(null);
+  const [ndaTarget, setNdaTarget] = useState(null);
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   const [filters, setFilters] = useState({
@@ -155,7 +157,7 @@ export default function MainPage() {
               <option value="">All</option>
               <option value="ACTIVE">Active</option>
               <option value="DRAFT">Draft</option>
-              <option value="CLOSED">Closed</option>
+              <option value="MEETING_SCHEDULED">Closed</option>
               <option value="EXPIRED">Expired</option>
             </select>
           </div>
@@ -175,18 +177,29 @@ export default function MainPage() {
 
                   return (
                     <div key={post.id} className="article-card">
-                      <h3>{post.title}</h3>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <h3 style={{ margin: 0, marginBottom: '12px' }}>{post.title}</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: '16px' }}>
+                          <span style={{ fontSize: '13px', color: '#64748b', whiteSpace: 'nowrap' }}>
+                            {post.created_at ? new Date(post.created_at).toLocaleDateString() : 'Just now'}
+                          </span>
+                          <span style={{ fontSize: '12px', color: '#ef4444', whiteSpace: 'nowrap', marginTop: '4px' }}>
+                            Expires: {post.expiry_date ? new Date(post.expiry_date).toLocaleDateString() : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
                       <p>{post.description}</p>
                       <p><strong>Expertise:</strong> {post.needed_expertise}</p>
                       <p><strong>Domain:</strong> {post.working_domain}</p>
-                      <p><strong>Status:</strong> {post.status}</p>
+                      <p><strong>Status:</strong> {post.status === 'MEETING_SCHEDULED' ? 'CLOSED' : post.status}</p>
+                      <p><strong>Author:</strong> {post.author_name || currentUser?.fullName}</p>
 
                       <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         {!isOwner && isActive && (
                           <button
                             type="button"
                             className="secondary-button"
-                            onClick={() => sendRequest(post.author_id, post.id)}
+                            onClick={() => setNdaTarget({ receiverId: post.author_id, postId: post.id })}
                           >
                             Express Interest
                           </button>
@@ -294,6 +307,15 @@ export default function MainPage() {
               ));
             }}
           />
+      <NDAModal
+        isOpen={!!ndaTarget}
+        onClose={() => setNdaTarget(null)}
+        onAccept={() => {
+          sendRequest(ndaTarget.receiverId, ndaTarget.postId);
+          setNdaTarget(null);
+        }}
+      />
+
       <button className="floating-action" onClick={() => window.location.href = '/messages'}>➤</button>
     </div>
     

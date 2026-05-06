@@ -1,5 +1,7 @@
 DROP TABLE IF EXISTS activity_logs CASCADE;
 DROP TABLE IF EXISTS meeting_requests CASCADE;
+DROP TABLE IF EXISTS collaboration_requests CASCADE;
+DROP TABLE IF EXISTS meetings CASCADE;
 DROP TABLE IF EXISTS posts CASCADE;
 DROP TABLE IF EXISTS messages CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
@@ -59,6 +61,27 @@ CREATE TABLE meeting_requests (
     cancelled_at TIMESTAMP
 );
 
+CREATE TABLE collaboration_requests (
+    id SERIAL PRIMARY KEY,
+    sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    receiver_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    status VARCHAR(50) NOT NULL DEFAULT 'PENDING'
+        CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED')),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE meetings (
+    id SERIAL PRIMARY KEY,
+    requester_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    receiver_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    meeting_time TIMESTAMP NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'PENDING'
+        CHECK (status IN ('PENDING', 'ACCEPTED', 'DECLINED', 'CANCELLED')),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE activity_logs (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
@@ -100,11 +123,3 @@ VALUES (
   'ACTIVE', 
   true
 ) ON CONFLICT DO NOTHING;
-
-INSERT INTO posts (author_id, title, description, needed_expertise, working_domain, project_stage, collaboration_type, commitment_level, confidentiality_level, city, country, status)
-VALUES 
-  ((SELECT id FROM users WHERE email='bot@healthai.dev'), 'AI Lung Cancer Detection', 'Looking for an expert radiologist to collaborate tightly on refining a ResNet model for identifying early-stage lung nodules. I have access to a small localized dataset.', 'Radiology, Machine Learning', 'Diagnostics', 'PROTOTYPE', 'CO_FOUNDER', 'PART_TIME', 'MEDIUM', 'Istanbul', 'Turkey', 'ACTIVE'),
-  ((SELECT id FROM users WHERE email='bot@healthai.dev'), 'Diabetes Risk Prediction', 'Need EHR integration insights! Creating an NLP-powered system to detect hidden diabetes risks in unstructured clinical notes.', 'NLP, Endocrinology', 'EHR Analytics', 'PROTOTYPE', 'CO_FOUNDER', 'PART_TIME', 'MEDIUM', 'Istanbul', 'Turkey', 'ACTIVE'),
-  ((SELECT id FROM users WHERE email='bot@healthai.dev'), 'EHR Data Analysis Tool', 'A fast, privacy-preserving LLM agent capable of summarizing prolonged treatment records into quick dashboards.', 'Full-Stack, Prompt Engineering', 'Data Mining', 'IDEA', 'ADVISOR', 'FLEXIBLE', 'HIGH', 'Istanbul', 'Turkey', 'ACTIVE'),
-  ((SELECT id FROM users WHERE email='bot@healthai.dev'), 'Wearable Device Integration for Arrhythmia', 'Seeking a team to build an anomaly detection microservice specifically pulling live data streams from Apple Watch. Needs strict latency optimizations.', 'Embedded Systems, Cardiology', 'Wearables & IoT', 'PROTOTYPE', 'CO_FOUNDER', 'PART_TIME', 'MEDIUM', 'Istanbul', 'Turkey', 'ACTIVE');
- 

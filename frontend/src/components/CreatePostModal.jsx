@@ -18,6 +18,10 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const storedUser = localStorage.getItem('user');
+  const user = storedUser ? JSON.parse(storedUser) : null;
+  const authorName = user ? user.fullName : 'Unknown Author';
+
   if (!isOpen) return null;
 
   const handleChange = (e) => {
@@ -96,11 +100,21 @@ export default function CreatePostModal({ isOpen, onClose, onPostCreated }) {
             </div>
           </div>
 
-          <div className="modal-footer">
-            <button type="button" className="secondary-button" onClick={onClose}>Cancel</button>
-            <button type="submit" className="primary-button" style={{padding: '0 24px'}} disabled={loading}>
-              {loading ? 'Creating...' : 'Post Details'}
-            </button>
+          <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ fontSize: '14px', color: '#64748b' }}>
+                <strong>Author:</strong> {authorName}
+              </div>
+              <div style={{ fontSize: '12px', color: '#ef4444' }}>
+                * This post will automatically expire in 30 days.
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button type="button" className="secondary-button" onClick={onClose}>Cancel</button>
+              <button type="submit" className="primary-button" style={{padding: '0 24px'}} disabled={loading}>
+                {loading ? 'Creating...' : 'Post Details'}
+              </button>
+            </div>
           </div>
         </form>
       </div>
