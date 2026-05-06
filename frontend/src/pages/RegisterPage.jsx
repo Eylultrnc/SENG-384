@@ -33,6 +33,7 @@ export default function RegisterPage({ role = 'healthcare' }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [verificationToken, setVerificationToken] = useState(null);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -44,7 +45,7 @@ export default function RegisterPage({ role = 'healthcare' }) {
     setLoading(true);
 
     try {
-      await apiFetch('/auth/register', {
+      const data = await apiFetch('/auth/register', {
         method: 'POST',
         body: JSON.stringify({
           fullName: `${firstName} ${lastName}`.trim(),
@@ -53,8 +54,10 @@ export default function RegisterPage({ role = 'healthcare' }) {
           role,
         }),
       });
-      setSuccess("Account created! You can now log in.");
-      setTimeout(() => navigate('/'), 2000);
+      setSuccess("Account created successfully!");
+      if (data.verificationToken) {
+        setVerificationToken(data.verificationToken);
+      }
     } catch (err) {
       setError(err.message || "Registration failed");
     } finally {
@@ -92,11 +95,27 @@ export default function RegisterPage({ role = 'healthcare' }) {
             <FormInput required value={repeatPassword} onChange={e => setRepeatPassword(e.target.value)} label="Repeat Password" placeholder="Repeat your password" type="password" />
             
             {error && <p className="error-message" style={{color: 'red'}}>{error}</p>}
-            {success && <p className="success-message" style={{color: 'green'}}>{success}</p>}
+            {success && <p className="success-message" style={{color: 'green', marginBottom: '10px'}}>{success}</p>}
             
-            <button disabled={loading} type="submit" className="primary-button primary-button--light">
-              {loading ? "Signing up..." : "Sign Up"}
-            </button>
+            {verificationToken && (
+              <div style={{ padding: '12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '6px', marginBottom: '16px' }}>
+                <p style={{ fontSize: '13px', color: '#166534', margin: '0 0 8px 0' }}>
+                  Please check your email to verify your account. (Simulation link below)
+                </p>
+                <Link 
+                  to={`/verify-email?token=${verificationToken}`}
+                  style={{ display: 'inline-block', fontSize: '14px', color: '#15803d', fontWeight: 'bold', textDecoration: 'underline' }}
+                >
+                  Verify Email Address
+                </Link>
+              </div>
+            )}
+            
+            {!verificationToken && (
+              <button disabled={loading} type="submit" className="primary-button primary-button--light">
+                {loading ? "Signing up..." : "Sign Up"}
+              </button>
+            )}
           </form>
         </div>
       }

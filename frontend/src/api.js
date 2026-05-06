@@ -24,7 +24,13 @@ export const apiFetch = async (endpoint, options = {}) => {
     headers,
   });
 
-  const data = await response.json();
+  let data;
+  try {
+    data = await response.json();
+  } catch (err) {
+    const text = await response.text().catch(() => 'no text');
+    throw new Error(`Invalid JSON response: ${err.message}. (Status: ${response.status})`);
+  }
 
   if (!response.ok) {
     throw new Error(data.message || "Request failed");

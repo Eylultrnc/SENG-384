@@ -50,8 +50,8 @@ const register = async (req, res) => {
         passwordHash,
         role.toUpperCase(),
         institution || null,
-        "ACTIVE",
-        true,
+        "PENDING_VERIFICATION",
+        false,
         verificationToken,
       ]
     );
