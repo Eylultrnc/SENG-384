@@ -3,9 +3,13 @@ const pool = require("../db");
 const getAllUsers = async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, full_name, email, role, institution, bio FROM users WHERE id != $1 ORDER BY full_name ASC`,
+      `SELECT id, full_name, email, role, institution, bio, city, country
+       FROM users
+       WHERE id != $1
+       ORDER BY full_name ASC`,
       [req.user.userId]
     );
+
     res.json(result.rows);
   } catch (error) {
     console.error("GET USERS ERROR:", error);
@@ -15,19 +19,32 @@ const getAllUsers = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { fullName, bio, institution } = req.body;
+    const { fullName, bio, institution, city, country } = req.body;
     const userId = req.user.userId;
+
     const result = await pool.query(
       `UPDATE users
-       SET full_name = $1, bio = $2, institution = $3
-       WHERE id = $4
-       RETURNING id, full_name, email, role, institution, bio`,
-      [fullName, bio || null, institution || null, userId]
+       SET full_name = $1,
+           bio = $2,
+           institution = $3,
+           city = $4,
+           country = $5
+       WHERE id = $6
+       RETURNING id, full_name, email, role, institution, bio, city, country`,
+      [
+        fullName,
+        bio || null,
+        institution || null,
+        city || null,
+        country || null,
+        userId
+      ]
     );
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "User not found" });
     }
+
     res.json({
       message: "Profile updated successfully",
       user: {
@@ -36,7 +53,9 @@ const updateProfile = async (req, res) => {
         email: result.rows[0].email,
         role: result.rows[0].role,
         institution: result.rows[0].institution,
-        bio: result.rows[0].bio
+        bio: result.rows[0].bio,
+        city: result.rows[0].city,
+        country: result.rows[0].country
       }
     });
   } catch (error) {
@@ -46,4 +65,3 @@ const updateProfile = async (req, res) => {
 };
 
 module.exports = { getAllUsers, updateProfile };
-

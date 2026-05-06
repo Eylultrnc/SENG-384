@@ -6,36 +6,51 @@ export default function AdminPage() {
   const [users, setUsers] = useState([]);
   const [posts, setPosts] = useState([]);
   const [logs, setLogs] = useState([]);
+  const [userRoleFilter, setUserRoleFilter] = useState('');
+  const [logFilter, setLogFilter] = useState('');
 
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   const fetchAdminData = async () => {
     try {
-        const userData = await apiFetch('/admin/users');
-        setUsers(userData);
+      const userData = await apiFetch('/admin/users');
+      setUsers(userData);
     } catch (err) {
-        console.error('ADMIN USERS ERROR:', err);
+      console.error('ADMIN USERS ERROR:', err);
     }
 
     try {
-        const postData = await apiFetch('/admin/posts');
-        setPosts(postData);
+      const postData = await apiFetch('/admin/posts');
+      setPosts(postData);
     } catch (err) {
-        console.error('ADMIN POSTS ERROR:', err);
+      console.error('ADMIN POSTS ERROR:', err);
     }
 
     try {
-        const logData = await apiFetch('/admin/logs');
-        setLogs(logData);
+      const logData = await apiFetch('/admin/logs');
+      setLogs(logData);
     } catch (err) {
-        console.error('ADMIN LOGS ERROR:', err);
-        setLogs([]);
+      console.error('ADMIN LOGS ERROR:', err);
+      setLogs([]);
     }
   };
 
   useEffect(() => {
     fetchAdminData();
   }, []);
+
+  const filteredUsers = users.filter((user) => {
+    if (!userRoleFilter) return true;
+    return user.role === userRoleFilter;
+  });
+
+  const filteredLogs = logs.filter((log) => {
+    if (!logFilter) return true;
+
+    return String(log.action_type || '')
+      .toLowerCase()
+      .includes(logFilter.toLowerCase());
+  });
 
   const removePost = async (id) => {
     if (!window.confirm('Remove this post?')) return;
@@ -70,6 +85,57 @@ export default function AdminPage() {
     }
   };
 
+  const exportLogsCSV = () => {
+    if (logs.length === 0) {
+      alert('No logs to export');
+      return;
+    }
+
+    const escapeCSV = (value) => {
+      const text = String(value ?? '');
+      return `"${text.replace(/"/g, '""')}"`;
+    };
+
+    const headers = [
+      'Action Type',
+      'User',
+      'Role',
+      'Target',
+      'Status',
+      'Timestamp'
+    ];
+
+    const rows = filteredLogs.map((log) => [
+      log.action_type,
+      log.full_name || 'Unknown User',
+      log.role || 'N/A',
+      log.target_entity || '',
+      log.result_status || '',
+      log.timestamp ? new Date(log.timestamp).toLocaleString() : ''
+    ]);
+
+    const csvContent = [
+      headers.map(escapeCSV).join(','),
+      ...rows.map((row) => row.map(escapeCSV).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], {
+      type: 'text/csv;charset=utf-8;'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.setAttribute('download', 'activity_logs.csv');
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+  };
+
   if (currentUser.role !== 'ADMIN') {
     return (
       <div className="app-shell">
@@ -92,10 +158,23 @@ export default function AdminPage() {
         <section className="sidebar-card" style={{ marginTop: '24px' }}>
           <h2>Users</h2>
 
-          {users.length === 0 ? (
+          <div style={{ marginTop: '12px', marginBottom: '16px' }}>
+            <select
+              className="filter-select"
+              value={userRoleFilter}
+              onChange={(e) => setUserRoleFilter(e.target.value)}
+            >
+              <option value="">All Roles</option>
+              <option value="ADMIN">Admin</option>
+              <option value="HEALTHCARE">Healthcare</option>
+              <option value="ENGINEER">Engineer</option>
+            </select>
+          </div>
+
+          {filteredUsers.length === 0 ? (
             <p style={{ color: '#64748b' }}>No users found.</p>
           ) : (
-            users.map((user) => (
+            filteredUsers.map((user) => (
               <div key={user.id} className="proposal-item" style={{ marginTop: '10px' }}>
                 <h5>{user.full_name}</h5>
                 <span>
@@ -142,10 +221,36 @@ export default function AdminPage() {
         <section className="sidebar-card" style={{ marginTop: '24px' }}>
           <h2>Activity Logs</h2>
 
-          {logs.length === 0 ? (
-            <p style={{ color: '#64748b' }}>No logs yet.</p>
+          <div
+            style={{
+              display: 'flex',
+              gap: '12px',
+              marginTop: '12px',
+              marginBottom: '18px',
+              flexWrap: 'wrap'
+            }}
+          >
+            <input
+              className="filter-input"
+              placeholder="Filter by action type..."
+              value={logFilter}
+              onChange={(e) => setLogFilter(e.target.value)}
+              style={{ maxWidth: '260px' }}
+            />
+
+            <button
+              className="primary-button"
+              style={{ minHeight: '40px' }}
+              onClick={exportLogsCSV}
+            >
+              Export CSV
+            </button>
+          </div>
+
+          {filteredLogs.length === 0 ? (
+            <p style={{ color: '#64748b' }}>No logs found.</p>
           ) : (
-            logs.map((log) => (
+            filteredLogs.map((log) => (
               <div key={log.id} className="proposal-item" style={{ marginTop: '10px' }}>
                 <h5>{log.action_type}</h5>
 
@@ -154,7 +259,7 @@ export default function AdminPage() {
                 </span>
 
                 <p style={{ marginTop: '6px', color: '#64748b' }}>
-                  {log.target_entity || 'No target'} • {new Date(log.timestamp).toLocaleString()}
+                  {log.target_entity || 'No target'} • {log.timestamp ? new Date(log.timestamp).toLocaleString() : 'No date'}
                 </p>
               </div>
             ))

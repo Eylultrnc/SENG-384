@@ -72,7 +72,6 @@ const getAllPosts = async (req, res) => {
       SELECT p.*, u.full_name AS author_name, u.role AS author_role
       FROM posts p
       JOIN users u ON p.author_id = u.id
-      WHERE 1=1
     `;
 
     const params = [];
@@ -311,21 +310,23 @@ const publishPost = async (req, res) => {
 };
 const deletePost = async (req, res) => {
   try {
-    const postId = req.params.id;
+    const { id } = req.params;
     const userId = req.user.userId;
 
-    const result = await pool.query(
-      `DELETE FROM posts 
-       WHERE id = $1 AND author_id = $2
-       RETURNING *`,
-      [postId, userId]
+    const ownerCheck = await pool.query(
+      `SELECT * FROM posts WHERE id = $1 AND author_id = $2`,
+      [id, userId]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: "Post not found or not yours" });
+    if (ownerCheck.rows.length === 0) {
+      return res.status(403).json({ message: "Not authorized to delete this post" });
     }
 
-    res.json({ message: "Post deleted" });
+    await pool.query(`DELETE FROM meetings WHERE post_id = $1`, [id]);
+    await pool.query(`DELETE FROM collaboration_requests WHERE post_id = $1`, [id]);
+    await pool.query(`DELETE FROM posts WHERE id = $1`, [id]);
+
+    res.json({ message: "Post deleted successfully" });
   } catch (err) {
     console.error("DELETE POST ERROR:", err);
     res.status(500).json({ message: "Error deleting post" });

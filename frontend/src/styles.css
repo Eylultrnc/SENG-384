@@ -1095,3 +1095,15 @@ button, input { font: inherit; }
   gap: 8px;
   align-items: center;
 }
+.match-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}

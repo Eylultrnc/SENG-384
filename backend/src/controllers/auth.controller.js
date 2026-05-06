@@ -43,7 +43,7 @@ const register = async (req, res) => {
       `INSERT INTO users
       (full_name, email, password_hash, role, institution, status, email_verified, verification_token, created_at)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW())
-      RETURNING id, full_name, email, role, email_verified`,
+      RETURNING id, full_name, email, role, institution, bio, city, country, status, email_verified`,
       [
         fullName,
         email,
@@ -58,7 +58,18 @@ const register = async (req, res) => {
 
     return res.status(201).json({
       message: "Registration successful. Please verify your email before login.",
-      user: result.rows[0],
+      user: {
+        id: result.rows[0].id,
+        fullName: result.rows[0].full_name,
+        email: result.rows[0].email,
+        role: result.rows[0].role,
+        institution: result.rows[0].institution,
+        bio: result.rows[0].bio,
+        city: result.rows[0].city,
+        country: result.rows[0].country,
+        status: result.rows[0].status,
+        emailVerified: result.rows[0].email_verified,
+      },
       verificationToken,
     });
   } catch (error) {
@@ -108,11 +119,23 @@ const login = async (req, res) => {
     }
 
     if (!isEduEmail(email)) {
-      return res.status(400).json({ message: "Sadece .edu veya .edu.tr uzantılı e-posta adresleri ile giriş yapabilirsiniz." });
+      return res.status(400).json({
+        message: "Sadece .edu veya .edu.tr uzantılı e-posta adresleri ile giriş yapabilirsiniz.",
+      });
     }
 
     const result = await pool.query(
-      `SELECT id, full_name, email, password_hash, role, status, email_verified
+      `SELECT id,
+              full_name,
+              email,
+              password_hash,
+              role,
+              status,
+              email_verified,
+              institution,
+              bio,
+              city,
+              country
        FROM users
        WHERE email = $1`,
       [email]
@@ -165,6 +188,12 @@ const login = async (req, res) => {
         fullName: user.full_name,
         email: user.email,
         role: user.role,
+        institution: user.institution,
+        bio: user.bio,
+        city: user.city,
+        country: user.country,
+        status: user.status,
+        emailVerified: user.email_verified,
       },
     });
   } catch (error) {
@@ -177,4 +206,4 @@ module.exports = {
   register,
   verifyEmail,
   login,
-}; 
+};
