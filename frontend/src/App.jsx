@@ -6,6 +6,7 @@ import MainPage from './pages/MainPage';
 import ProfilePage from './pages/ProfilePage';
 import MessagesPage from './pages/MessagesPage';
 import React from 'react';
+import AdminPage from './pages/AdminPage';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
       <Route path="/messages" element={<MessagesPage />} />
       <Route path="/messages/:userId" element={<MessagesPage />} />
       <Route path="*" element={<div>Page not found</div>} />
+      <Route path="/admin" element={<AdminPage />} />
     </Routes>
   );
 }
