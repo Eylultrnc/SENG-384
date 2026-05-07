@@ -23,7 +23,7 @@ export default function MainPage() {
     query: '',
     domain: '',
     expertise: '',
-    status: 'ACTIVE'
+    status: 'ALL'
   });
 
   const normalizeText = (value) =>
