@@ -7,6 +7,7 @@ const authRoutes = require("./routes/auth.routes");
 const postRoutes = require("./routes/post.routes");
 const userRoutes = require("./routes/user.routes");
 const messageRoutes = require("./routes/message.routes");
+const feedbackRoutes = require("./routes/feedback.routes");
 const pool = require("./db");
 
 const app = express();
@@ -33,6 +34,7 @@ app.use("/api/posts", postRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/feedbacks", feedbackRoutes);
 
 const PORT = process.env.PORT || 3000;
 

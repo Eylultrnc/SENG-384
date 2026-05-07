@@ -1,9 +1,11 @@
 import { ArrowLeft, Home, UserCircle2 } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import React, { useState } from "react";
+import FeedbackModal from "./FeedbackModal";
 
 export default function AppHeader() {
   const [showMenu, setShowMenu] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,7 +35,12 @@ export default function AppHeader() {
         </Link>
       </div>
 
-      <div className="app-header__title">HEALTH AI</div>
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="app-header__title">HEALTH AI</div>
+        <span style={{ position: 'absolute', left: '100%', marginLeft: '250px', fontSize: '14px', color: '#64748b', fontWeight: '600', whiteSpace: 'nowrap', marginTop: '6px' }}>
+          support@healthai.edu
+        </span>
+      </div>
 
       <div
         className="header-avatar"
@@ -48,6 +55,13 @@ export default function AppHeader() {
             Profile
           </button>
 
+          <button onClick={() => {
+            setShowMenu(false);
+            setShowFeedbackModal(true);
+          }}>
+            Send Feedback
+          </button>
+
           {currentUser?.role === "ADMIN" && (
             <button onClick={() => navigate("/admin")}>
               Admin Panel
@@ -58,6 +72,10 @@ export default function AppHeader() {
             Logout
           </button>
         </div>
+      )}
+
+      {showFeedbackModal && (
+        <FeedbackModal onClose={() => setShowFeedbackModal(false)} />
       )}
     </header>
   );

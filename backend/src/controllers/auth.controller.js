@@ -44,7 +44,7 @@ const register = async (req, res) => {
       `INSERT INTO users
       (full_name, email, password_hash, role, institution, status, email_verified, verification_token, created_at)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW())
-      RETURNING id, full_name, email, role, institution, bio, city, country, status, email_verified`,
+      RETURNING id, full_name, email, role, institution, bio, status, email_verified`,
       [
         fullName,
         email,
@@ -66,8 +66,6 @@ const register = async (req, res) => {
         role: result.rows[0].role,
         institution: result.rows[0].institution,
         bio: result.rows[0].bio,
-        city: result.rows[0].city,
-        country: result.rows[0].country,
         status: result.rows[0].status,
         emailVerified: result.rows[0].email_verified,
       },
@@ -143,9 +141,7 @@ const login = async (req, res) => {
               status,
               email_verified,
               institution,
-              bio,
-              city,
-              country
+              bio
        FROM users
        WHERE email = $1`,
       [email]
@@ -207,8 +203,6 @@ const login = async (req, res) => {
         role: user.role,
         institution: user.institution,
         bio: user.bio,
-        city: user.city,
-        country: user.country,
         status: user.status,
         emailVerified: user.email_verified,
       },
