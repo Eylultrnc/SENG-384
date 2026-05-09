@@ -29,7 +29,7 @@ The system focuses on:
 # 🌐 Live Demo
 
 Deployed Application:  
-https://seng-384.vercel.app/
+https://seng-384.vercel.app
 
 ---
 
