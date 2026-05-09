@@ -6,7 +6,7 @@ A collaborative web platform that connects engineers and healthcare professional
 
 ---
 
-## 📌 Project Overview
+## Project Overview
 
 HEALTH AI is a role-based collaboration platform developed for the **SENG384 – Software Project IV** course.
 
@@ -26,14 +26,14 @@ The system focuses on:
 
 ---
 
-# 🌐 Live Demo
+# Live Demo
 
 Deployed Application:  
 https://seng-384.vercel.app
 
 ---
 
-## 👥 Team Members
+## Team Members
 
 - Eylül Turunç
 - Beril Aşçi
@@ -42,7 +42,7 @@ https://seng-384.vercel.app
 
 ---
 
-# 🏗️ Project Structure
+# Project Structure
 
 ```bash
 SENG-384/
@@ -64,7 +64,7 @@ SENG-384/
 
 ---
 
-# ⚙️ Technologies Used
+# Technologies Used
 
 ## Frontend
 
@@ -99,9 +99,9 @@ SENG-384/
 
 ---
 
-# ✨ Main Features
+# Main Features
 
-## 🔐 Authentication & Authorization
+## Authentication & Authorization
 
 - Institutional `.edu` / `.edu.tr` email restriction
 - Email verification system
@@ -111,7 +111,7 @@ SENG-384/
 
 ---
 
-## 📝 Post Management
+## Post Management
 
 Users can:
 
@@ -136,7 +136,7 @@ Post lifecycle states:
 
 ---
 
-## 🔎 Search & Matching
+## Search & Matching
 
 - Filter posts by:
   - expertise
@@ -149,7 +149,7 @@ Post lifecycle states:
 
 ---
 
-## 🤝 Meeting Request Workflow
+## Meeting Request Workflow
 
 - Interest messaging
 - NDA acceptance
@@ -159,7 +159,7 @@ Post lifecycle states:
 
 ---
 
-## 🛡️ Admin Dashboard
+## Admin Dashboard
 
 Admins can:
 
@@ -172,7 +172,7 @@ Admins can:
 
 ---
 
-# 🔒 Security & Privacy
+# Security & Privacy
 
 The system follows GDPR-aware design principles:
 
@@ -186,7 +186,7 @@ The system follows GDPR-aware design principles:
 
 ---
 
-# 🚀 Installation & Setup
+# Installation & Setup
 
 ## 1. Clone the Repository
 
@@ -248,7 +248,7 @@ docker-compose up --build
 
 ---
 
-# 📡 API Endpoints
+# API Endpoints
 
 ## Authentication
 
@@ -294,7 +294,7 @@ docker-compose up --build
 
 ---
 
-# 📱 UI Screens
+# UI Screens
 
 The platform includes:
 
@@ -310,7 +310,7 @@ The platform includes:
 
 ---
 
-# 📊 Non-Functional Requirements
+# Non-Functional Requirements
 
 - Search results under **1.5 seconds**
 - Page load under **3 seconds**
@@ -320,7 +320,7 @@ The platform includes:
 
 ---
 
-# 📄 Documentation
+# Documentation
 
 - `SRS_HealthAI.docx.pdf`
 - `SDD_HealthAI.pdf`
@@ -337,7 +337,7 @@ These documents contain:
 
 ---
 
-# 📌 Future Improvements
+# Future Improvements
 
 Potential future enhancements:
 
@@ -350,7 +350,7 @@ Potential future enhancements:
 
 ---
 
-# 📜 License
+# License
 
 This project was developed for academic purposes as part of the  
 **SENG384 – Software Project IV** course.
