@@ -4,6 +4,8 @@
 
 This project is a full-stack web application designed to manage supplier information. It is fully containerized using **Docker** and follows a **RESTful** architecture for seamless data communication.
 
+ [
+You can access the deployment of the project by this link:](seng-384.vercel.app)
 ---
 
 ## 🛠️ Technologies & Features
