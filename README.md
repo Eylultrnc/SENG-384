@@ -324,6 +324,7 @@ The platform includes:
 
 - `SRS_HealthAI.docx.pdf`
 - `SDD_HealthAI.pdf`
+- `UserGuide_HealthAI.pdf`
 
 These documents contain:
 
