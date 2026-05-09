@@ -15,26 +15,33 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/api/health", (req, res) => {
-  res.json({ message: "Backend is running" });
-});
+const mountRoutes = (prefix = "") => {
+  app.get(`${prefix}/health`, (req, res) => {
+    res.json({ message: "Backend is running" });
+  });
 
-app.get("/api/db-test", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT NOW()");
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "DB connection failed" });
-  }
-});
+  app.get(`${prefix}/db-test`, async (req, res) => {
+    try {
+      const result = await pool.query("SELECT NOW()");
+      res.json(result.rows);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "DB connection failed" });
+    }
+  });
 
-app.use("/api/auth", authRoutes);
-app.use("/api/posts", postRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/messages", messageRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/feedbacks", feedbackRoutes);
+  app.use(`${prefix}/auth`, authRoutes);
+  app.use(`${prefix}/posts`, postRoutes);
+  app.use(`${prefix}/users`, userRoutes);
+  app.use(`${prefix}/messages`, messageRoutes);
+  app.use(`${prefix}/admin`, adminRoutes);
+  app.use(`${prefix}/feedbacks`, feedbackRoutes);
+};
+
+// Mount routes at /api for local development compatibility
+mountRoutes("/api");
+// Mount routes at / for Vercel Serverless where /api is stripped
+mountRoutes("");
 
 const PORT = process.env.PORT || 3000;
 
