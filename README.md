@@ -1,108 +1,355 @@
 # SENG-384
 
-# 🚀 Full-Stack Web Application with Docker
+# HEALTH AI – Co-Creation & Innovation Platform
 
-This project is a full-stack web application designed to manage supplier information. It is fully containerized using **Docker** and follows a **RESTful** architecture for seamless data communication.
-
- 
-You can access the deployment of the project by this link: [seng-384.vercel.app](https://seng-384.vercel.app)
----
-
-## 🛠️ Technologies & Features
-
-* **Frontend:** React.js & Axios (Port: 3001)
-* **Backend:** Node.js & Express.js (Port: 3000)
-* **Database:** PostgreSQL (Port: 5432)
-* **Containerization:** Docker & Docker Compose
-* **Features:** Dynamic supplier listing, real-time data fetching, and persistent storage.
+A collaborative web platform that connects engineers and healthcare professionals to develop innovative health-tech solutions through structured matchmaking, secure communication, and meeting workflows.
 
 ---
 
-## 📂 Project Structure
+## 📌 Project Overview
 
-```text
-project-root/
-├── frontend/           # React.js application
-│   ├── Dockerfile
-│   └── src/
-├── backend/            # Express.js API
-│   ├── Dockerfile
-│   └── src/index.js
-├── db/                 # SQL initialization scripts
-│   └── init.sql
-└── docker-compose.yml  # Multi-container orchestration
+HEALTH AI is a role-based collaboration platform developed for the **SENG384 – Software Project IV** course.
+
+The platform enables:
+
+- Engineers to publish technical or AI-driven healthcare ideas
+- Healthcare professionals to share clinical problems and innovation needs
+- Secure collaboration initiation through meeting requests and NDA acceptance
+- Admins to manage users, posts, and audit logs
+
+The system focuses on:
+
+- secure first-contact initiation,
+- structured collaboration,
+- role-based access control,
+- and GDPR-aware data handling.
+
+---
+
+# 🌐 Live Demo
+
+Deployed Application:  
+https://seng-384.vercel.app/
+
+---
+
+## 👥 Team Members
+
+- Eylül Turunç
+- Beril Aşçi
+- Serra Selci
+- Dilan Yardım
+
+---
+
+# 🏗️ Project Structure
+
+```bash
+SENG-384/
+│
+├── backend/              # Express.js backend API
+├── frontend/             # React frontend application
+│   ├── public/
+│   ├── src/
+│   ├── package.json
+│   └── .env
+│
+├── db/                   # Database-related files/scripts
+├── docker-compose.yml
+├── README.md
+├── SRS_HealthAI.docx.pdf
+├── SDD_HealthAI.pdf
+└── vercel.json
 ```
 
-## ⚙️ Installation & Running the Project
-Follow these steps to run the application on your local machine:
+---
 
-1. Clone or Extract the Project
-Navigate to the project's root directory (project-root) in your terminal.
+# ⚙️ Technologies Used
 
-2. Run with Docker Compose
-Execute the following command to build and start all services (Frontend, Backend, and Database) simultaneously:
-```text
+## Frontend
+
+- React.js
+- Tailwind CSS
+- Axios
+- React Router
+
+## Backend
+
+- Node.js
+- Express.js
+- JWT Authentication
+- Socket.io
+
+## Database
+
+- PostgreSQL / MySQL
+
+## Security
+
+- bcrypt password hashing
+- JWT-based session management
+- Role-Based Access Control (RBAC)
+- HTTPS communication support
+
+## DevOps & Deployment
+
+- Docker
+- Vercel
+- GitHub
+
+---
+
+# ✨ Main Features
+
+## 🔐 Authentication & Authorization
+
+- Institutional `.edu` / `.edu.tr` email restriction
+- Email verification system
+- Secure login/logout
+- JWT authentication
+- RBAC (Engineer / Healthcare Professional / Admin)
+
+---
+
+## 📝 Post Management
+
+Users can:
+
+- Create collaboration posts
+- Edit or archive posts
+- Save drafts
+- Define:
+  - required expertise
+  - collaboration type
+  - project stage
+  - commitment level
+  - confidentiality level
+  - city/country
+
+Post lifecycle states:
+
+- Draft
+- Active
+- Meeting Scheduled
+- Partner Found
+- Expired
+
+---
+
+## 🔎 Search & Matching
+
+- Filter posts by:
+  - expertise
+  - domain
+  - location
+  - project stage
+  - status
+- Match explanation system
+- Same-city highlighting
+
+---
+
+## 🤝 Meeting Request Workflow
+
+- Interest messaging
+- NDA acceptance
+- Meeting scheduling
+- Multiple time-slot proposals
+- External meeting integrations (Zoom / Teams / Meet)
+
+---
+
+## 🛡️ Admin Dashboard
+
+Admins can:
+
+- manage users,
+- suspend accounts,
+- remove inappropriate posts,
+- monitor logs,
+- export CSV reports,
+- track platform activity.
+
+---
+
+# 🔒 Security & Privacy
+
+The system follows GDPR-aware design principles:
+
+- No patient data storage
+- No file upload support
+- Encrypted passwords using bcrypt
+- Secure session handling
+- Audit logging
+- HTTPS communication
+- Tamper-resistant logs
+
+---
+
+# 🚀 Installation & Setup
+
+## 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd SENG-384
+```
+
+---
+
+## 2. Backend Setup
+
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file:
+
+```env
+PORT=5000
+DATABASE_URL=your_database_url
+JWT_SECRET=your_jwt_secret
+EMAIL_USER=your_email
+EMAIL_PASS=your_password
+```
+
+Run backend:
+
+```bash
+npm run dev
+```
+
+---
+
+## 3. Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend runs on:
+
+```bash
+http://localhost:5173
+```
+
+---
+
+## 4. Docker Setup (Optional)
+
+Run the entire project with Docker:
+
+```bash
 docker-compose up --build
 ```
-3. Access the Application
-
-**Frontend:** Open http://localhost:3001 in your browser to use the Supplier Form.
-
-**Backend API:** You can view the stored data (JSON) at http://localhost:3000/api/people.
-
-## ScreenShots 
-
-<p align="center">
-  <img width="600" height="500" src="https://github.com/user-attachments/assets/8a650e0d-434c-4423-997b-2c980ac4cb92" />
-  <br/>
-  <em>Registration Form </em>
-</p>
-<p align="center">
-  <img width="600" height="500" src="https://github.com/user-attachments/assets/ebbf3faa-1a25-4638-ba36-928bbbe0df12" />
-  <br/>
-  <em> List of People that are registered</em>
-</p>
-<p align="center">
-  <img width="600" height="500" src="https://github.com/user-attachments/assets/713c5998-4c4e-44e7-93ba-3080eb811fe5" />
-  <br/>
-  <em>The API Endpoints screen displays the structure and description of GET and POST requests within the system.</em>
-</p>
-<p align="center">
-  <img width="600" height="500" src="https://github.com/user-attachments/assets/02ec2b6a-ad7b-41dd-a55e-c6290e8d7e16" />
-  <br/>
-  <em>Delete button </em>
-</p>
-
-
-
-
-## 🛰️ API Endpoints
-
-| Method | Endpoint     | Description                                      |
-|--------|-------------|--------------------------------------------------|
-| GET    | `/api/people` | Fetches all registered suppliers from the database. |
-| POST   | `/api/people` | Adds a new supplier to the PostgreSQL database.     |
-
-
-## 🗄️ Database Initialization
-
-The system automatically creates the **people** table and required schema when the database container starts for the first time. This is handled by the `init.sql` script located in the `db` volume mapping. This ensures the database is ready to use immediately upon startup without manual configuration.
 
 ---
 
-## 📝 Features
+# 📡 API Endpoints
 
-- ✨ **Dynamic Supplier Listing:** View newly added suppliers instantly on the dashboard without a page refresh.
+## Authentication
 
-- 🔗 **Form Validation:** Robust data handling using **Axios** for seamless frontend-backend communication.
+| Method | Endpoint                 | Description       |
+| ------ | ------------------------ | ----------------- |
+| POST   | `/api/auth/register`     | Register new user |
+| POST   | `/api/auth/login`        | Login             |
+| POST   | `/api/auth/verify-email` | Verify email      |
+| POST   | `/api/auth/logout`       | Logout            |
 
-- 💾 **Persistent Storage:** Data remains safe in **PostgreSQL** even if containers are stopped or restarted.
+---
 
-- 🐳 **Seamless Setup:** Environment-agnostic and one-command setup via **Docker Compose**.
+## Posts
 
+| Method | Endpoint                |
+| ------ | ----------------------- |
+| GET    | `/api/posts`            |
+| POST   | `/api/posts`            |
+| GET    | `/api/posts/:id`        |
+| PUT    | `/api/posts/:id`        |
+| PATCH  | `/api/posts/:id/status` |
 
+---
 
+## Meetings
 
+| Method | Endpoint            |
+| ------ | ------------------- |
+| POST   | `/api/meetings`     |
+| PATCH  | `/api/meetings/:id` |
+| DELETE | `/api/meetings/:id` |
 
+---
 
+## Admin
 
+| Method | Endpoint               |
+| ------ | ---------------------- |
+| GET    | `/api/admin/users`     |
+| PATCH  | `/api/admin/users/:id` |
+| DELETE | `/api/admin/posts/:id` |
+| GET    | `/api/admin/logs`      |
+
+---
+
+# 📱 UI Screens
+
+The platform includes:
+
+- Login / Register : ![alt text](image.png) / ![alt text](image-10.png) / ![alt text](image-8.png)
+- Dashboard : ![alt text](image-1.png)
+- Profile Page : ![alt text](image-2.png)
+- Delete account: ![alt text](image-6.png)
+- Meeting Request Screen : ![alt text](image-3.png)
+- Schedule meeting: ![alt text](image-4.png)
+- Create Post: ![alt text](image-7.png)
+- Messaging Interface: ![alt text](image-9.png)
+- Admin Panel : ![alt text](image-5.png)
+
+---
+
+# 📊 Non-Functional Requirements
+
+- Search results under **1.5 seconds**
+- Page load under **3 seconds**
+- Support for **1000 concurrent users**
+- Mobile responsive UI
+- WCAG 2.1 accessibility compliance
+
+---
+
+# 📄 Documentation
+
+- `SRS_HealthAI.docx.pdf`
+- `SDD_HealthAI.pdf`
+
+These documents contain:
+
+- software requirements,
+- architecture diagrams,
+- ER diagrams,
+- API designs,
+- state diagrams,
+- and UI wireframes.
+
+---
+
+# 📌 Future Improvements
+
+Potential future enhancements:
+
+- AI-powered recommendation engine
+- Smart partner matching
+- Real-time notifications
+- Calendar integrations
+- Advanced analytics dashboard
+- In-platform video meetings
+
+---
+
+# 📜 License
+
+This project was developed for academic purposes as part of the  
+**SENG384 – Software Project IV** course.
